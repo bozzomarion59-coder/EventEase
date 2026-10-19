@@ -46,3 +46,4 @@
 - Projet Expo créé (SDK 57), AsyncStorage installé, fichiers du modèle supprimés. Testé sur iPhone.
 - Dépôt GitHub créé, premier commit poussé.
 - Navigation en place et testée sur iPhone : onglets Événements et Profil, détail, formulaire, connexion, inscription. ESLint configuré pour le projet.
+- Connexion et inscription terminées (Membre / Bénévole, consentement, mot de passe haché), testées sur iPhone : champs vides, consentement manquant, mot de passe trop court, email déjà utilisé, mauvais mot de passe, déconnexion, session conservée à la réouverture de l'app.
