@@ -4,7 +4,7 @@
 
 | Jour | Date | Objectif | Statut |
 |---|---|---|---|
-| 1 | Lundi 19/10 | Projet Expo, écrans de base, navigation, connexion et inscription | En cours |
+| 1 | Lundi 19/10 | Projet Expo, écrans de base, navigation, connexion et inscription | Terminé |
 | 2 | Mardi 20/10 | CRUD des événements, « participé », persistance AsyncStorage | |
 | 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | |
 | 4 | Jeudi 22/10 | Gel à midi, tests sur iPhone, document technique, soutenance | |
@@ -34,6 +34,10 @@
 | 19/10 | Lint | Configuration ESLint propre au projet (`eslint.config.js`, `eslint-config-expo`) | Sans elle, ESLint utilisait le fichier d'un autre projet trouvé dans le dossier personnel |
 | 19/10 | Mots de passe | Hachés avec SHA-256 et un sel aléatoire propre à chaque utilisateur (`expo-crypto`). Jamais stockés en clair | bcryptjs a besoin d'un générateur aléatoire sûr qui n'existe pas sur le téléphone sans `expo-crypto`, et il ralentit la connexion. Limite : SHA-256 est moins robuste que bcrypt. Avec un vrai serveur, bcrypt côté serveur |
 | 19/10 | Session | L'identifiant de l'utilisateur connecté est enregistré dans AsyncStorage, relu au démarrage, effacé à la déconnexion | Rester connecté en rouvrant l'app. Pas de token, donc pas de secret à chiffrer |
+| 19/10 | Organisation des routes | Onglets dans le groupe `(tabs)/`, écrans publics dans `auth/`, détail en route dynamique `event/[id].tsx`, un seul formulaire `event/form.tsx` (création sans `id`, modification avec `?id=`) | Le groupe `(tabs)` rend les onglets accessibles sans connexion. Un seul fichier pour tous les détails et un seul formulaire pour créer et modifier |
+| 19/10 | Retour après connexion / inscription | Connexion : retour à l'écran précédent (`router.back()`). Inscription : fermeture de tous les écrans ouverts par-dessus les onglets (`router.dismissAll()`) | Pas de rôle, donc pas de redirection par rôle. Après l'inscription, un simple retour ramènerait à l'écran de connexion |
+| 19/10 | Accessibilité | Zones tactiles de 48 px minimum (`minHeight`), libellés VoiceOver sur les champs, boutons et onglets, erreurs annoncées après une seconde, apostrophe typographique `’` dans les textes | Sur iPhone, une annonce faite pendant la mise à jour de l'écran est annulée. L'apostrophe droite est refusée par le lint dans le JSX |
+| 19/10 | Couleurs | Écrites en dur dans chaque écran, identiques partout (bleu `#0056B3`, erreur `#B00020`, fond `#F2F2F2`) | Le thème clair / sombre est prévu mercredi : elles passeront alors dans un seul fichier |
 
 ## Points à trancher
 
@@ -44,6 +48,9 @@
 ### Lundi 19/10
 - Analyse du cahier des charges, planning sur 4 jours.
 - Projet Expo créé (SDK 57), AsyncStorage installé, fichiers du modèle supprimés. Testé sur iPhone.
-- Dépôt GitHub créé, premier commit poussé.
+- Dépôt GitHub créé, premier commit poussé. Première Pull Request (`docs/suivi`).
+- Template GitHub de 2016 trouvé, écarté après analyse (API retirées de React Native, composants en classe).
 - Navigation en place et testée sur iPhone : onglets Événements et Profil, détail, formulaire, connexion, inscription. ESLint configuré pour le projet.
+- Branches `docs/suivi` et `feat/navigation` restaurées sur GitHub après leur suppression : les branches sont désormais conservées.
+- Erreur « Cannot find native module 'ExpoAsset' » au lancement : projet vérifié sain (`expo install --check`, `expo-doctor`), résolue en relançant le serveur avec `-c` et en rouvrant Expo Go.
 - Connexion et inscription terminées (Membre / Bénévole, consentement, mot de passe haché), testées sur iPhone : champs vides, consentement manquant, mot de passe trop court, email déjà utilisé, mauvais mot de passe, déconnexion, session conservée à la réouverture de l'app.
