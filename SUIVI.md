@@ -30,6 +30,10 @@
 | 19/10 | Droits sur les événements | Seul le créateur d'un événement peut le modifier ou le supprimer. Tout membre connecté peut participer | Éviter qu'un membre modifie ou supprime l'événement d'un autre |
 | 19/10 | Liste des écrans | Visiteur : liste des événements (accueil), détail, connexion, inscription. Membre connecté, en plus : participation depuis le détail, formulaire d'événement (création et modification), profil avec ses participations | Couvre toutes les fonctionnalités obligatoires du cahier des charges |
 | 19/10 | Onglets | Événements et Profil (Calendrier ajouté mercredi). Pour un visiteur, l'onglet Profil propose de se connecter | Peu de sections : deux onglets suffisent. Mêmes onglets pour tout le monde |
+| 19/10 | Branches conservées | Les branches restent sur GitHub après la fusion (`gh pr merge --merge`, sans `--delete-branch`) | Montrer au jury une branche par fonctionnalité, avec sa Pull Request |
+| 19/10 | Lint | Configuration ESLint propre au projet (`eslint.config.js`, `eslint-config-expo`) | Sans elle, ESLint utilisait le fichier d'un autre projet trouvé dans le dossier personnel |
+| 19/10 | Mots de passe | Hachés avec SHA-256 et un sel aléatoire propre à chaque utilisateur (`expo-crypto`). Jamais stockés en clair | bcryptjs a besoin d'un générateur aléatoire sûr qui n'existe pas sur le téléphone sans `expo-crypto`, et il ralentit la connexion. Limite : SHA-256 est moins robuste que bcrypt. Avec un vrai serveur, bcrypt côté serveur |
+| 19/10 | Session | L'identifiant de l'utilisateur connecté est enregistré dans AsyncStorage, relu au démarrage, effacé à la déconnexion | Rester connecté en rouvrant l'app. Pas de token, donc pas de secret à chiffrer |
 
 ## Points à trancher
 
@@ -41,3 +45,4 @@
 - Analyse du cahier des charges, planning sur 4 jours.
 - Projet Expo créé (SDK 57), AsyncStorage installé, fichiers du modèle supprimés. Testé sur iPhone.
 - Dépôt GitHub créé, premier commit poussé.
+- Navigation en place et testée sur iPhone : onglets Événements et Profil, détail, formulaire, connexion, inscription. ESLint configuré pour le projet.
