@@ -1,16 +1,22 @@
 // Toutes les données de l'app passent par ce fichier (il joue le rôle de l'API)
-import { User } from '@/types';
+import { DEMO_EVENTS } from '@/data/demo';
+import { Event, User } from '@/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 
 // Les clés sous lesquelles les données sont rangées dans AsyncStorage
 const USERS_KEY = 'users';
 const SESSION_KEY = 'session';
+const EVENTS_KEY = 'events';
+
+// ==========================================
+// GESTION DES UTILISATEURS
+// ==========================================
 
 // Lit la liste des comptes enregistrés sur le téléphone
 async function getUsers(): Promise<User[]> {
-  const json = await AsyncStorage.getItem(USERS_KEY); // le texte enregistré, ou null
-  return json ? JSON.parse(json) : []; // pas encore de comptes : liste vide
+  const json = await AsyncStorage.getItem(USERS_KEY);
+  return json ? JSON.parse(json) : [];
 }
 
 // Enregistre la liste des comptes sur le téléphone
@@ -31,33 +37,20 @@ export async function registerUser(
   password: string,
   statut: User['statut'],
 ): Promise<User> {
-  // 1. Nettoyer l'email : enlever les espaces, tout en minuscules
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
 
-  // 2. Vérifier : nom non vide, email qui contient @, mot de passe de 8 caractères minimum
-  if (!cleanName) {
-    throw new Error('Le nom ne peut pas être vide.');
-  }
-  if (!cleanEmail.includes('@')) {
-    throw new Error('L’adresse e-mail n’est pas valide.');
-  }
-  if (password.length < 8) {
-    throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
-  }
+  if (!cleanName) throw new Error('Le nom ne peut pas être vide.');
+  if (!cleanEmail.includes('@')) throw new Error('L’adresse e-mail n’est pas valide.');
+  if (password.length < 8) throw new Error('Le mot de passe doit contenir au moins 8 caractères.');
 
-  // 3. Lire les comptes ; si un compte a déjà cet email → throw new Error
   const users = await getUsers();
   const emailExists = users.some((u) => u.email === cleanEmail);
-  if (emailExists) {
-    throw new Error('Cette adresse e-mail est déjà utilisée.');
-  }
+  if (emailExists) throw new Error('Cette adresse e-mail est déjà utilisée.');
 
-  // 4. Créer le sel avec Crypto.randomUUID(), puis le hash avec hashPassword
   const salt = Crypto.randomUUID();
   const passwordHash = await hashPassword(password, salt);
 
-  // 5. Construire le nouvel utilisateur (id : Crypto.randomUUID() aussi)
   const newUser: User = {
     id: Crypto.randomUUID(),
     name: cleanName,
@@ -67,10 +60,7 @@ export async function registerUser(
     salt,
   };
 
-  // 6. Enregistrer la liste avec le nouveau compte
   await saveUsers([...users, newUser]);
-
-  // Enregistrement de la session pour connecter automatiquement l'utilisateur après l'inscription
   await AsyncStorage.setItem(SESSION_KEY, newUser.id);
 
   return newUser;
@@ -78,27 +68,16 @@ export async function registerUser(
 
 // Connecte un utilisateur. Lance une erreur générique si l'email ou le mot de passe est incorrect.
 export async function loginUser(email: string, password: string): Promise<User> {
-  // 1. Nettoyer l'email
   const cleanEmail = email.trim().toLowerCase();
 
-  // 2. Chercher le compte correspondant
   const users = await getUsers();
   const user = users.find((u) => u.email === cleanEmail);
 
-  // 3. S'il n'existe pas, erreur générique (sécurité)
-  if (!user) {
-    throw new Error('Email ou mot de passe incorrect.');
-  }
+  if (!user) throw new Error('Email ou mot de passe incorrect.');
 
-  // 4. Hacher le mot de passe soumis avec le sel du compte trouvé
   const inputHash = await hashPassword(password, user.salt);
+  if (inputHash !== user.passwordHash) throw new Error('Email ou mot de passe incorrect.');
 
-  // 5. Si le hash ne correspond pas, même erreur générique
-  if (inputHash !== user.passwordHash) {
-    throw new Error('Email ou mot de passe incorrect.');
-  }
-
-  // 6. Enregistrer l'ID utilisateur en session et renvoyer le profil complet
   await AsyncStorage.setItem(SESSION_KEY, user.id);
   return user;
 }
@@ -106,17 +85,144 @@ export async function loginUser(email: string, password: string): Promise<User> 
 // Récupère l'utilisateur actuellement connecté au démarrage
 export async function getSessionUser(): Promise<User | null> {
   const userId = await AsyncStorage.getItem(SESSION_KEY);
-  if (!userId) {
-    return null;
-  }
+  if (!userId) return null;
 
   const users = await getUsers();
-  const currentUser = users.find((u) => u.id === userId);
-  
-  return currentUser || null;
+  return users.find((u) => u.id === userId) || null;
 }
 
 // Déconnecte l'utilisateur en effaçant sa session
 export async function logoutUser(): Promise<void> {
   await AsyncStorage.removeItem(SESSION_KEY);
+}
+
+// ==========================================
+// GESTION DES ÉVÉNEMENTS
+// ==========================================
+
+// Enregistre la liste des événements sur le téléphone (Privée)
+async function saveEvents(events: Event[]): Promise<void> {
+  const json = JSON.stringify(events);
+  await AsyncStorage.setItem(EVENTS_KEY, json);
+}
+
+// Lit la liste des événements enregistrés ou charge les démos au 1er lancement
+export async function getEvents(): Promise<Event[]> {
+  const json = await AsyncStorage.getItem(EVENTS_KEY);
+
+  // Premier lancement strict : la clé n'existe pas du tout dans AsyncStorage
+  if (json === null) {
+    await saveEvents(DEMO_EVENTS);
+    return DEMO_EVENTS;
+  }
+
+  return JSON.parse(json);
+}
+
+// Récupère un événement spécifique par son identifiant unique
+export async function getEvent(id: string): Promise<Event | null> {
+  const events = await getEvents();
+  return events.find((e) => e.id === id) || null;
+}
+
+// ==========================================
+// CRUD ET ACTIONS SUR LES ÉVÉNEMENTS
+// ==========================================
+
+// Crée un nouvel événement
+export async function createEvent(
+  title: string,
+  description: string,
+  date: string,
+  userId: string
+): Promise<Event> {
+  const cleanTitle = title.trim();
+
+  if (!cleanTitle) {
+    throw new Error('Le titre de l’événement ne peut pas être vide.');
+  }
+
+  const events = await getEvents();
+
+  const newEvent: Event = {
+    id: Crypto.randomUUID(),
+    title: cleanTitle,
+    description: description.trim(),
+    date,
+    createdBy: userId,
+    participants: [],
+  };
+
+  await saveEvents([...events, newEvent]);
+  return newEvent;
+}
+
+// Modifie un événement existant (Vérification du créateur intégrée)
+export async function updateEvent(
+  id: string,
+  title: string,
+  description: string,
+  date: string,
+  userId: string
+): Promise<void> {
+  const events = await getEvents();
+  const event = events.find((e) => e.id === id);
+
+  if (!event) {
+    throw new Error('Événement introuvable.');
+  }
+
+  if (event.createdBy !== userId) {
+    throw new Error('Seul le créateur peut modifier cet événement.');
+  }
+
+  const cleanTitle = title.trim();
+  if (!cleanTitle) {
+    throw new Error('Le titre de l’événement ne peut pas être vide.');
+  }
+
+  const updatedEvents = events.map((e) =>
+    e.id === id ? { ...e, title: cleanTitle, description: description.trim(), date } : e
+  );
+
+  await saveEvents(updatedEvents);
+}
+
+// Supprime un événement (Vérification du créateur intégrée)
+export async function deleteEvent(id: string, userId: string): Promise<void> {
+  const events = await getEvents();
+  const event = events.find((e) => e.id === id);
+
+  if (!event) {
+    throw new Error('Événement introuvable.');
+  }
+
+  if (event.createdBy !== userId) {
+    throw new Error('Seul le créateur peut supprimer cet événement.');
+  }
+
+  const filteredEvents = events.filter((e) => e.id !== id);
+  await saveEvents(filteredEvents);
+}
+
+// Alterne l'inscription ou la désinscription d'un membre à un événement
+export async function toggleParticipation(id: string, userId: string): Promise<void> {
+  const events = await getEvents();
+  const event = events.find((e) => e.id === id);
+
+  if (!event) {
+    throw new Error('Événement introuvable.');
+  }
+
+  const isAlreadyParticipating = event.participants.includes(userId);
+
+  const newParticipants = isAlreadyParticipating
+    ? event.participants.filter((pId) => pId !== userId)
+    : [...event.participants, userId];
+
+  const updatedEvents = events.map((e) =>
+    e.id === id ? { ...e, participants: newParticipants } : e
+  );
+
+  await saveEvents(updatedEvents);
 }

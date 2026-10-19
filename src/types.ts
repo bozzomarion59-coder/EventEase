@@ -9,3 +9,13 @@ export type User = {
   passwordHash: string; // mot de passe haché (jamais le mot de passe en clair)
   salt: string;         // sel propre à cet utilisateur
 };
+
+// Un événement créé dans l'application
+export type Event = {
+  id: string;           // identifiant unique, généré à la création
+  title: string;        // titre de l'événement
+  description: string;  // description
+  date: string;         // date et heure au format ISO (ex. "2026-10-24T14:00:00.000Z")
+  createdBy: string;    // id du créateur : lui seul peut modifier ou supprimer
+  participants: string[]; // id des membres qui participent
+};
