@@ -96,6 +96,13 @@ export async function logoutUser(): Promise<void> {
   await AsyncStorage.removeItem(SESSION_KEY);
 }
 
+// Renvoie seulement le nom et le statut d'un membre (jamais son email ni son mot de passe haché)
+export async function getMemberInfo(id: string): Promise<Pick<User, 'name' | 'statut'> | null> {
+  const users = await getUsers();
+  const user = users.find((u) => u.id === id);
+  return user ? { name: user.name, statut: user.statut } : null;
+}
+
 // ==========================================
 // GESTION DES ÉVÉNEMENTS
 // ==========================================
