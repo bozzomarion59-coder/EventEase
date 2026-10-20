@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -45,7 +46,10 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={100}
     >
-      <Text style={styles.title} accessibilityRole="header">Connexion</Text>
+      {/* Vitrine de l'app : icône, nom et phrase d'accroche */}
+      <Image source={require('../../../assets/images/eventease-icon.png')} style={styles.logo} />
+      <Text style={styles.title} accessibilityRole="header">EventEase</Text>
+      <Text style={styles.subtitle}>Les événements de l’association</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -97,12 +101,24 @@ function makeStyles(colors: Palette) {
       padding: 16,
       backgroundColor: colors.background,
     },
+    logo: {
+      width: 80,
+      height: 80,
+      borderRadius: 18,
+      alignSelf: 'center',
+      marginBottom: 12,
+    },
     title: {
       fontSize: 26,
       fontWeight: 'bold',
       color: colors.text,
-      marginBottom: 24,
       textAlign: 'center',
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: 24,
     },
     input: {
       minHeight: 48,

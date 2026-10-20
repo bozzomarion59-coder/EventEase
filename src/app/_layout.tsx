@@ -1,3 +1,4 @@
+import { HeaderTitle } from '@/components/HeaderTitle';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { Stack } from 'expo-router';
@@ -30,6 +31,7 @@ function ThemedStack() {
           headerStyle: { backgroundColor: colors.surface },
           headerTintColor: colors.text,
           contentStyle: { backgroundColor: colors.background },
+          headerTitle: (props) => <HeaderTitle>{props.children}</HeaderTitle>,
         }}
       >
         {/* Les onglets principaux (sans en-tête global) */}

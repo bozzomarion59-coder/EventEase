@@ -1,3 +1,4 @@
+import { HeaderTitle } from '@/components/HeaderTitle';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -12,6 +13,7 @@ export default function TabsLayout() {
         headerShown: true,
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
+        headerTitle: (props) => <HeaderTitle>{props.children}</HeaderTitle>,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
@@ -22,6 +24,8 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Événements',
+          // Accueil : le nom de l'app dans l'en-tête, « Événements » reste sous l'onglet
+          headerTitle: () => <HeaderTitle>EventEase</HeaderTitle>,
           tabBarAccessibilityLabel: 'Liste des événements',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar-outline" color={color} size={size} />
