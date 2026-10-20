@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link, router } from 'expo-router';
 import { Button } from '@/components/Button';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { TextField } from '@/components/TextField';
 import { Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { announceError } from '@/utils/accessibility';
@@ -32,6 +34,8 @@ export default function LoginScreen() {
   }
 
   return (
+    // Fond en dégradé rose pâle : l'écran « vitrine » de l'app
+    <LinearGradient colors={colors.backgroundGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -64,38 +68,47 @@ export default function LoginScreen() {
         Pas encore de compte ? S’inscrire
       </Link>
     </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 // Styles calculés à partir des couleurs du thème actif (clair ou sombre)
 function makeStyles(colors: Palette) {
   return StyleSheet.create({
+    gradient: {
+      flex: 1,
+    },
     container: {
       flex: 1,
       justifyContent: 'center',
       padding: 16,
-      backgroundColor: colors.background,
     },
+    // Icône légèrement penchée, bordure épaisse et ombre décalée : le ton « associatif »
     logo: {
-      width: 80,
-      height: 80,
-      borderRadius: 18,
+      width: 88,
+      height: 88,
+      borderRadius: 22,
+      borderWidth: 3,
+      borderColor: colors.border,
       alignSelf: 'center',
-      marginBottom: 12,
+      marginBottom: 16,
+      transform: [{ rotate: '-4deg' }],
     },
     title: {
-      fontSize: 26,
-      fontWeight: 'bold',
-      color: colors.text,
+      fontFamily: fonts.heading,
+      fontSize: 34,
+      color: colors.secondary,
       textAlign: 'center',
     },
     subtitle: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.textMuted,
       textAlign: 'center',
       marginBottom: 24,
     },
     link: {
+      fontFamily: fonts.body,
       color: colors.primary,
       fontSize: 16,
       textAlign: 'center',

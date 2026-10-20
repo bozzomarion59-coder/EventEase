@@ -1,5 +1,6 @@
 import { Loading } from '@/components/Loading';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/events';
@@ -8,7 +9,7 @@ import { formatDayKey, formatTime, toDayKey } from '@/utils/date';
 import { isParticipant, sortByDate } from '@/utils/events';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import type { MarkedDates } from 'react-native-calendars/src/types';
 
@@ -103,31 +104,34 @@ export default function CalendarScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bounces={false}>
       {/* Calendrier du mois */}
-      <Calendar
-        key={mode} // Force le rafraîchissement complet au basculement de thème
-        firstDay={1} // Semaine commence le lundi
-        current={selectedDate}
-        markedDates={markedDates}
-        markingType={'multi-dot'}
-        onDayPress={(day) => setSelectedDate(day.dateString)}
-        theme={{
-          backgroundColor: colors.surface,
-          calendarBackground: colors.surface,
-          textSectionTitleColor: colors.textMuted,
-          selectedDayBackgroundColor: colors.primary,
-          selectedDayTextColor: colors.onPrimary,
-          todayTextColor: colors.primary,
-          dayTextColor: colors.text,
-          textDisabledColor: colors.border,
-          dotColor: colors.primary,
-          selectedDotColor: colors.onPrimary,
-          arrowColor: colors.primary,
-          monthTextColor: colors.text,
-          textMonthFontWeight: '700',
-          textDayHeaderFontWeight: '600',
-        }}
-        style={styles.calendar}
-      />
+      <View style={styles.calendarShadow}>
+        <Calendar
+          key={mode} // Force le rafraîchissement complet au basculement de thème
+          firstDay={1} // Semaine commence le lundi
+          current={selectedDate}
+          markedDates={markedDates}
+          markingType={'multi-dot'}
+          onDayPress={(day) => setSelectedDate(day.dateString)}
+          theme={{
+            backgroundColor: colors.surface,
+            calendarBackground: colors.surface,
+            textSectionTitleColor: colors.textMuted,
+            selectedDayBackgroundColor: colors.primary,
+            selectedDayTextColor: colors.onPrimary,
+            todayTextColor: colors.primary,
+            dayTextColor: colors.text,
+            textDisabledColor: colors.textMuted,
+            dotColor: colors.primary,
+            selectedDotColor: colors.onPrimary,
+            arrowColor: colors.primary,
+            monthTextColor: colors.text,
+            textMonthFontFamily: fonts.heading,
+            textDayFontFamily: fonts.body,
+            textDayHeaderFontFamily: fonts.bodyBold,
+          }}
+          style={styles.calendar}
+        />
+      </View>
 
       {/* Légende des points */}
       <View style={styles.legend}>
@@ -194,10 +198,16 @@ function makeStyles(colors: Palette) {
       gap: 16,
     },
     calendar: {
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 12,
-      overflow: 'hidden',
+      borderRadius: 16,
+      overflow: 'hidden', // les coins arrondis coupent le fond du calendrier
+    },
+    // L'ombre est sur un cadre autour : overflow: hidden la couperait sur iOS
+    calendarShadow: {
+      borderRadius: 16,
+      backgroundColor: colors.surface,
+      ...offsetShadow(colors),
     },
     legend: {
       flexDirection: 'row',
@@ -210,13 +220,14 @@ function makeStyles(colors: Palette) {
       borderRadius: 5,
     },
     legendText: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       marginRight: 12,
     },
     sectionTitle: {
+      fontFamily: fonts.heading,
       fontSize: 18,
-      fontWeight: '700',
       color: colors.text,
       marginTop: 8,
     },
@@ -226,21 +237,11 @@ function makeStyles(colors: Palette) {
     },
     eventCard: {
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 12,
+      borderRadius: 16,
       padding: 16,
-      ...Platform.select({
-        ios: {
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.05,
-          shadowRadius: 4,
-        },
-        android: {
-          elevation: 2,
-        },
-      }),
+      ...offsetShadow(colors),
     },
     cardHeader: {
       flexDirection: 'row',
@@ -249,17 +250,18 @@ function makeStyles(colors: Palette) {
       marginBottom: 6,
     },
     eventTime: {
+      fontFamily: fonts.bodyBold,
       fontSize: 14,
-      fontWeight: '600',
       color: colors.primary,
     },
     eventTitle: {
+      fontFamily: fonts.heading,
       fontSize: 16,
-      fontWeight: '700',
       color: colors.text,
       marginBottom: 4,
     },
     eventDescription: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       lineHeight: 20,
@@ -267,13 +269,14 @@ function makeStyles(colors: Palette) {
     badge: {
       paddingHorizontal: 8,
       paddingVertical: 4,
-      borderRadius: 6,
+      borderRadius: 999,
     },
     badgeText: {
+      fontFamily: fonts.bodyBold,
       fontSize: 11,
-      fontWeight: '700',
     },
     emptyText: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       fontStyle: 'italic',

@@ -4,7 +4,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { Button } from '@/components/Button';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Loading } from '@/components/Loading';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/events';
@@ -129,11 +130,12 @@ function makeStyles(colors: Palette) {
     },
     card: {
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 16,
       padding: 14,
       gap: 6,
+      ...offsetShadow(colors),
     },
     cardHeader: {
       flexDirection: 'row',
@@ -142,34 +144,38 @@ function makeStyles(colors: Palette) {
       gap: 8,
     },
     title: {
+      fontFamily: fonts.heading,
       flex: 1,
       fontSize: 17,
-      fontWeight: 'bold',
       color: colors.text,
     },
     badge: {
+      fontFamily: fonts.bodyBold,
       fontSize: 13,
-      fontWeight: '600',
       color: colors.success,
       backgroundColor: colors.successBackground,
-      borderRadius: 8,
+      borderRadius: 999,
       overflow: 'hidden',
       paddingHorizontal: 8,
       paddingVertical: 4,
     },
     date: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
     },
     description: {
+      fontFamily: fonts.body,
       fontSize: 15,
       color: colors.text,
     },
     count: {
+      fontFamily: fonts.body,
       fontSize: 13,
       color: colors.textMuted,
     },
     empty: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.textMuted,
       textAlign: 'center',

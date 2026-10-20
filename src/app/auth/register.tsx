@@ -9,11 +9,13 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Button } from '@/components/Button';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { TextField } from '@/components/TextField';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { User } from '@/types';
@@ -62,6 +64,7 @@ export default function RegisterScreen() {
   }
 
   return (
+    <LinearGradient colors={colors.backgroundGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.gradient}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -161,15 +164,18 @@ export default function RegisterScreen() {
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
+    </LinearGradient>
   );
 }
 
 // Styles calculés à partir des couleurs du thème actif (clair ou sombre)
 function makeStyles(colors: Palette) {
   return StyleSheet.create({
+    gradient: {
+      flex: 1,
+    },
     container: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     scrollContainer: {
       flexGrow: 1,
@@ -177,21 +183,22 @@ function makeStyles(colors: Palette) {
       padding: 16,
     },
     title: {
-      fontSize: 26,
-      fontWeight: 'bold',
-      color: colors.text,
+      fontFamily: fonts.heading,
+      fontSize: 30,
+      color: colors.secondary,
       textAlign: 'center',
       marginBottom: 4,
     },
     subtitle: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.textMuted,
       textAlign: 'center',
       marginBottom: 24,
     },
     label: {
+      fontFamily: fonts.bodyBold,
       fontSize: 15,
-      fontWeight: '600',
       color: colors.text,
       marginBottom: 6,
     },
@@ -203,12 +210,13 @@ function makeStyles(colors: Palette) {
     statusButton: {
       flex: 1,
       minHeight: 48,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 16,
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
+      ...offsetShadow(colors),
     },
     statusButtonActive: {
       borderColor: colors.primary,
@@ -216,8 +224,8 @@ function makeStyles(colors: Palette) {
       backgroundColor: colors.accent,
     },
     statusButtonText: {
+      fontFamily: fonts.bodyBold,
       fontSize: 16,
-      fontWeight: '600',
       color: colors.text,
     },
     statusButtonTextActive: {
@@ -243,6 +251,7 @@ function makeStyles(colors: Palette) {
       backgroundColor: colors.primary,
     },
     checkboxLabel: {
+      fontFamily: fonts.body,
       flex: 1,
       fontSize: 15,
       color: colors.text,
@@ -253,6 +262,7 @@ function makeStyles(colors: Palette) {
       marginTop: 12,
     },
     footerText: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.text,
       textAlign: 'center',
