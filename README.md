@@ -85,6 +85,8 @@ src/
 
 ## Suivi du projet
 
+- [Document technique](docs/DOCUMENT_TECHNIQUE.md) : architecture et choix techniques en 10 lignes ([PDF](docs/EventEase-Document-technique.pdf))
+- [Diaporama de soutenance](docs/EventEase-Soutenance.pdf) (PDF)
 - [`SUIVI.md`](SUIVI.md) : planning, décisions et leurs raisons, journal jour par jour
 - [`PROMPTS.md`](PROMPTS.md) : traçabilité de l'usage de l'intelligence artificielle
 
