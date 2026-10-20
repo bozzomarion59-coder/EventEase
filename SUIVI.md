@@ -7,7 +7,7 @@
 | 1 | Lundi 19/10 | Projet Expo, écrans de base, navigation, connexion et inscription | Terminé |
 | 2 | Mardi 20/10 | CRUD des événements, « participé », persistance AsyncStorage | Terminé (avancé lundi après-midi, testé mardi matin) |
 | 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | Thème, calendrier, icône, splash, météo et distance faits mardi |
-| 4 | Jeudi 22/10 | Gel à midi, tests sur iPhone, document technique, soutenance | |
+| 4 | Jeudi 22/10 | Gel à midi, tests sur iPhone, document technique, soutenance | Document technique et diaporama prêts dès mardi |
 
 ## Décisions
 
@@ -66,6 +66,10 @@
 | 20/10 | Style de l'app | Style « associatif » : cartes et boutons à bordure épaisse et ombre décalée, badges en pilule, en-têtes et bouton principal en dégradé (`expo-linear-gradient`), polices Fredoka (titres) et Nunito (texte) chargées au démarrage | Choisi parmi 4 maquettes (futuriste, cotton, éditorial, associatif) : une personnalité qui colle à la vie d'une association, en restant lisible |
 | 20/10 | Palette | « Bleu nuit et framboise », version claire et sombre, contraste calculé pour chaque couleur (4,9:1 minimum). Erreurs et « Se déconnecter » en orangé | Choisie parmi 4 palettes après un premier essai terracotta / bleu canard qui ne me plaisait pas. Le bleu nuit reste proche de l'icône. Un rouge se serait confondu avec le framboise des boutons principaux |
 | 20/10 | Chargement des polices | `useFonts` dans le layout racine, splash screen gardé jusqu'au chargement | Recommandé par la doc d'Expo : jamais d'affichage avec la mauvaise police. Fonctionne dans Expo Go |
+| 20/10 | Revue de sécurité | Alerte automatique sur le hachage SHA-256 : AsyncStorage gardé, SHA-256 + sel assumé, limite écrite dans le document technique et le diaporama | AsyncStorage est demandé par le cahier des charges. Prototype sans serveur : avec un vrai serveur, bcrypt côté serveur. `expo-secure-store` cité comme piste d'amélioration |
+| 20/10 | Comptes de démo | Deux comptes pour la soutenance : un Membre, un Bénévole | Montrer les deux statuts et la règle « seul le créateur modifie » |
+| 20/10 | Document technique | Un paragraphe d'une dizaine de lignes, en phrases simples, en Markdown et en PDF dans `docs/` | Demandé par le cahier des charges (« 10 lignes sur l'architecture et choix techniques »). Les détails techniques sont dans le diaporama |
+| 20/10 | Diaporama | 15 diapos au style de l'app, explications simples, diapos techniques intégrées au déroulé, une diapo sur les compétences du titre CDA, 9 min 25 avec la démo. PDF dans `docs/` | 10 minutes maximum. Le PDF s'ouvre sans Internet le jour de la soutenance |
 | 19/10 | Participation | Chaque événement garde la liste des identifiants de ses participants (`participants: string[]`). « Je participe » ajoute ou retire l'utilisateur de cette liste | Un seul endroit à lire pour afficher le nombre de participants et savoir si je participe |
 | 19/10 | Format des dates | Dates enregistrées au format ISO, affichées en français par une seule fonction `formatEventDate` (`src/utils/date.ts`) | Le format ISO se trie et se relit sans ambiguïté. Une seule fonction pour que l'affichage soit le même partout (liste, détail, profil) |
 | 19/10 | Sélecteur de date | `@react-native-community/datetimepicker`, installé avec `npx expo install`. iPhone : un sélecteur date + heure. Android : deux boutons, un pour la date et un pour l'heure. Dates passées interdites | Inclus dans Expo Go, donc pas besoin de build de développement. Android n'a pas de mode « date + heure » |
@@ -110,3 +114,4 @@
 - Nettoyage du dépôt : 20 images du modèle Expo et licence supprimées, README réécrit.
 - Architecture revue (branche `refactor/architecture`) : services séparés, 4 composants d'interface partagés. Écrans plus courts (jusqu'à 130 lignes de moins pour le détail).
 - Nouveau style de l'app (branche `feat/style-associatif`) : 4 styles comparés en maquettes, puis 4 palettes. Testé sur iPhone en clair et en sombre (profil, calendrier, liste, formulaire, détail avec météo, distance et suppression).
+- Document technique (10 lignes) et diaporama de soutenance (15 diapos, PDF) ajoutés dans `docs/`, liens dans le README.
