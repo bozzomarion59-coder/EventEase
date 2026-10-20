@@ -7,7 +7,8 @@ import { Button } from '@/components/Button';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Loading } from '@/components/Loading';
 import { TextField } from '@/components/TextField';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createEvent, getEvent, updateEvent } from '@/services/events';
@@ -228,8 +229,8 @@ function makeStyles(colors: Palette) {
       padding: 16,
     },
     label: {
+      fontFamily: fonts.bodyBold,
       fontSize: 15,
-      fontWeight: '600',
       color: colors.text,
       marginBottom: 6,
     },
@@ -250,16 +251,18 @@ function makeStyles(colors: Palette) {
       flexDirection: 'row',
       gap: 8,
       borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 8,
+      borderWidth: 2,
+      borderRadius: 16,
       backgroundColor: colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
+      ...offsetShadow(colors),
     },
     submit: {
       marginTop: 4,
     },
     dateButtonText: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.text,
     },

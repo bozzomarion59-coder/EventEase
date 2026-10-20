@@ -1,3 +1,4 @@
+import { fonts } from '@/constants/fonts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
 
@@ -15,6 +16,7 @@ export function ErrorMessage({ message, style }: { message: string; style?: Styl
 
 const styles = StyleSheet.create({
   error: {
+    fontFamily: fonts.bodyBold,
     fontSize: 15,
     marginBottom: 12,
   },

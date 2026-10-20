@@ -1,4 +1,6 @@
+import { HeaderBackground } from '@/components/HeaderBackground';
 import { HeaderTitle } from '@/components/HeaderTitle';
+import { fonts } from '@/constants/fonts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
@@ -11,10 +13,11 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
+        headerBackground: () => <HeaderBackground />,
+        headerTintColor: colors.onHeader,
         headerTitle: (props) => <HeaderTitle>{props.children}</HeaderTitle>,
-        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border, borderTopWidth: 2 },
+        tabBarLabelStyle: { fontFamily: fonts.bodyBold },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         sceneStyle: { backgroundColor: colors.background },

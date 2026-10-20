@@ -1,11 +1,13 @@
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ComponentProps } from 'react';
 import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from 'react-native';
 
-// primary : action principale (fond bleu) · outline : action secondaire (contour bleu)
-// danger : action destructrice (contour rouge) · success : action déjà faite (« Je participe » activé)
+// primary : action principale (dégradé framboise) · outline : action secondaire (contour framboise)
+// danger : action destructrice (contour orangé) · success : action déjà faite (« Je participe » activé)
 type Variant = 'primary' | 'outline' | 'danger' | 'success';
 
 type Props = {
@@ -19,33 +21,49 @@ type Props = {
   style?: StyleProp<ViewStyle>; // placement seulement (marges, flex)
 };
 
-// Bouton de l'app : zone tactile de 48 px minimum, couleurs du thème actif
+// Bouton de l'app : bordure épaisse, ombre décalée, zone tactile de 48 px minimum, couleurs du thème actif
 export function Button({ title, onPress, variant = 'primary', icon, disabled = false, accessibilityLabel, accessibilityState, style }: Props) {
   const { colors } = useTheme();
-  const { container, text } = variantColors(colors)[variant];
+  const { background, text } = variantColors(colors)[variant];
 
   return (
     <Pressable
-      style={[styles.button, container, disabled && styles.disabled, style]}
+      style={({ pressed }) => [
+        styles.button,
+        { borderColor: colors.border, backgroundColor: background },
+        // Appuyé : le bouton « s'enfonce » dans son ombre
+        pressed ? styles.pressed : offsetShadow(colors),
+        disabled && styles.disabled,
+        style,
+      ]}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? title}
       accessibilityState={{ ...accessibilityState, disabled }}
     >
+      {/* Bouton principal : le dégradé remplit tout le bouton, derrière le texte */}
+      {variant === 'primary' && (
+        <LinearGradient
+          colors={colors.primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[StyleSheet.absoluteFill, styles.gradient]}
+        />
+      )}
       {icon && <Ionicons name={icon} size={22} color={text} />}
       <Text style={[styles.text, { color: text }]}>{title}</Text>
     </Pressable>
   );
 }
 
-// Couleurs de fond, de bordure et de texte pour chaque variante
-function variantColors(colors: Palette): Record<Variant, { container: ViewStyle; text: string }> {
+// Fond et couleur du texte pour chaque variante (le fond du bouton principal est le dégradé)
+function variantColors(colors: Palette): Record<Variant, { background: string; text: string }> {
   return {
-    primary: { container: { backgroundColor: colors.primary, borderColor: colors.primary }, text: colors.onPrimary },
-    outline: { container: { backgroundColor: colors.surface, borderColor: colors.primary }, text: colors.primary },
-    danger: { container: { backgroundColor: colors.surface, borderColor: colors.error }, text: colors.error },
-    success: { container: { backgroundColor: colors.successBackground, borderColor: colors.success }, text: colors.success },
+    primary: { background: colors.primaryGradient[0], text: colors.onPrimary },
+    outline: { background: colors.surface, text: colors.primary },
+    danger: { background: colors.surface, text: colors.error },
+    success: { background: colors.successBackground, text: colors.success },
   };
 }
 
@@ -54,18 +72,25 @@ const styles = StyleSheet.create({
     minHeight: 48,
     flexDirection: 'row',
     gap: 8,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 16,
     paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // Coins du dégradé = coins du bouton moins la bordure (pas d'overflow: hidden, qui couperait l'ombre sur iOS)
+  gradient: {
+    borderRadius: 14,
+  },
+  pressed: {
+    transform: [{ translateX: 2 }, { translateY: 2 }],
   },
   // Désactivé : couleur atténuée plutôt que gris clair, pour garder un texte lisible
   disabled: {
     opacity: 0.5,
   },
   text: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.heading,
+    fontSize: 17,
   },
 });

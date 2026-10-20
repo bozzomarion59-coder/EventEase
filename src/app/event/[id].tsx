@@ -4,7 +4,8 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Button } from '@/components/Button';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { Loading } from '@/components/Loading';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useDistance } from '@/hooks/useDistance';
@@ -217,29 +218,32 @@ function makeStyles(colors: Palette) {
       gap: 16,
     },
     title: {
+      fontFamily: fonts.heading,
       fontSize: 26,
-      fontWeight: 'bold',
       color: colors.text,
     },
     meta: {
       gap: 4,
     },
     metaText: {
+      fontFamily: fonts.body,
       fontSize: 15,
       color: colors.textMuted,
     },
     description: {
+      fontFamily: fonts.body,
       fontSize: 16,
       lineHeight: 24,
       color: colors.text,
     },
     card: {
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 16,
       padding: 14,
       gap: 4,
+      ...offsetShadow(colors),
     },
     weatherRow: {
       flexDirection: 'row',
@@ -251,17 +255,18 @@ function makeStyles(colors: Palette) {
       height: 48,
     },
     cardLabel: {
+      fontFamily: fonts.bodyBold,
       fontSize: 13,
-      fontWeight: '600',
       color: colors.textMuted,
       textTransform: 'uppercase',
     },
     cardValue: {
+      fontFamily: fonts.bodyBold,
       fontSize: 17,
-      fontWeight: '600',
       color: colors.text,
     },
     hint: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
       textAlign: 'center',

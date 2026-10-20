@@ -3,7 +3,8 @@ import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-nat
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Button } from '@/components/Button';
-import { Palette } from '@/constants/colors';
+import { offsetShadow, Palette } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/events';
@@ -147,28 +148,30 @@ function makeStyles(colors: Palette) {
       alignItems: 'center',
       justifyContent: 'space-between',
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 16,
       paddingHorizontal: 14,
       marginTop: 12,
+      ...offsetShadow(colors),
     },
     // Sur iPhone, Switch se place en haut de sa ligne (alignSelf: 'flex-start') : on le recentre
     themeSwitch: {
       alignSelf: 'center',
     },
     themeLabel: {
+      fontFamily: fonts.bodyBold,
       fontSize: 16,
-      fontWeight: '600',
       color: colors.text,
     },
     sectionTitle: {
+      fontFamily: fonts.heading,
       fontSize: 18,
-      fontWeight: 'bold',
       color: colors.text,
       marginTop: 8,
     },
     emptyText: {
+      fontFamily: fonts.body,
       fontSize: 15,
       color: colors.textMuted,
     },
@@ -178,37 +181,36 @@ function makeStyles(colors: Palette) {
       alignItems: 'center',
       gap: 12,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      borderRadius: 8,
+      borderRadius: 16,
       padding: 14,
+      ...offsetShadow(colors),
     },
     participationText: {
       flex: 1,
       gap: 2,
     },
     participationTitle: {
+      fontFamily: fonts.heading,
       fontSize: 16,
-      fontWeight: '600',
       color: colors.text,
     },
     participationDate: {
+      fontFamily: fonts.body,
       fontSize: 14,
       color: colors.textMuted,
     },
     card: {
       backgroundColor: colors.surface,
-      borderRadius: 8,
+      borderRadius: 16,
       padding: 24,
-      borderWidth: 1,
+      borderWidth: 2,
       borderColor: colors.border,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
+      ...offsetShadow(colors),
     },
     visitorText: {
+      fontFamily: fonts.body,
       fontSize: 16,
       color: colors.text,
       textAlign: 'center',
@@ -219,27 +221,27 @@ function makeStyles(colors: Palette) {
       marginBottom: 20,
     },
     label: {
+      fontFamily: fonts.bodyBold,
       fontSize: 13,
-      fontWeight: '600',
       color: colors.textMuted,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
       marginBottom: 4,
     },
     value: {
+      fontFamily: fonts.bodyBold,
       fontSize: 16,
-      fontWeight: '500',
       color: colors.text,
     },
     badge: {
+      fontFamily: fonts.bodyBold,
       fontSize: 14,
-      fontWeight: '600',
       color: colors.primary,
       backgroundColor: colors.accent,
       alignSelf: 'flex-start',
       paddingHorizontal: 12,
       paddingVertical: 6,
-      borderRadius: 8,
+      borderRadius: 999,
       overflow: 'hidden',
     },
     logoutButton: {

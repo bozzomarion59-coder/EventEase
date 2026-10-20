@@ -1,3 +1,4 @@
+import { fonts } from '@/constants/fonts';
 import { useTheme } from '@/contexts/ThemeContext';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
 
@@ -5,7 +6,7 @@ type Props = TextInputProps & {
   label?: string; // titre affiché au-dessus du champ (ex. « Titre * »)
 };
 
-// Champ de saisie de l'app : titre facultatif, hauteur de 48 px minimum, couleurs du thème actif.
+// Champ de saisie de l'app : titre facultatif, bordure épaisse, hauteur de 48 px minimum, couleurs du thème actif.
 // Accepte toutes les propriétés d'un TextInput (value, onChangeText, placeholder, secureTextEntry…)
 export function TextField({ label, multiline, style, ...inputProps }: Props) {
   const { colors } = useTheme();
@@ -33,16 +34,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
+    fontFamily: fonts.bodyBold,
     fontSize: 15,
-    fontWeight: '600',
     marginBottom: 6,
   },
   input: {
     minHeight: 48,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 14,
+    fontFamily: fonts.body,
     fontSize: 16,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   multiline: {
     minHeight: 110,
