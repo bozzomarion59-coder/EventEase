@@ -1,4 +1,4 @@
-import { getSessionUser, loginUser, logoutUser, registerUser } from '@/services/storage';
+import { getSessionUser, loginUser, logoutUser, registerUser } from '@/services/auth';
 import { User } from '@/types';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 

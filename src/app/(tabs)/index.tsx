@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { Loading } from '@/components/Loading';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getEvents } from '@/services/storage';
+import { getEvents } from '@/services/events';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
 import { isParticipant, sortByDate } from '@/utils/events';
@@ -41,18 +43,14 @@ export default function EventListScreen() {
 
   // État 1 : chargement
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Chargement des événements" />
-      </View>
-    );
+    return <Loading label="Chargement des événements" />;
   }
 
   // État 2 : erreur
   if (error !== '') {
     return (
       <View style={styles.center}>
-        <Text style={styles.error} accessibilityRole="alert">{error}</Text>
+        <ErrorMessage message={error} style={styles.centeredText} />
       </View>
     );
   }
@@ -92,24 +90,20 @@ export default function EventListScreen() {
       ListFooterComponent={
         // Créer un événement : réservé aux membres connectés
         user ? (
-          <Pressable
-            style={styles.button}
+          <Button
+            title="Créer un événement"
+            icon="add-circle-outline"
             onPress={() => router.push('/event/form')}
-            accessibilityRole="button"
-            accessibilityLabel="Créer un événement"
-          >
-            <Ionicons name="add-circle-outline" size={22} color={colors.onPrimary} />
-            <Text style={styles.buttonText}>Créer un événement</Text>
-          </Pressable>
+            style={styles.footerButton}
+          />
         ) : (
-          <Pressable
-            style={styles.buttonOutline}
+          <Button
+            title="Se connecter pour créer ou participer"
+            variant="outline"
             onPress={() => router.push('/auth/login')}
-            accessibilityRole="button"
             accessibilityLabel="Se connecter pour créer un événement ou participer"
-          >
-            <Text style={styles.buttonOutlineText}>Se connecter pour créer ou participer</Text>
-          </Pressable>
+            style={styles.footerButton}
+          />
         )
       }
     />
@@ -181,40 +175,11 @@ function makeStyles(colors: Palette) {
       textAlign: 'center',
       marginVertical: 24,
     },
-    error: {
-      fontSize: 16,
-      color: colors.error,
+    centeredText: {
       textAlign: 'center',
     },
-    button: {
-      minHeight: 48,
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
+    footerButton: {
       marginTop: 4,
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    buttonOutline: {
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface,
-      marginTop: 4,
-    },
-    buttonOutlineText: {
-      color: colors.primary,
-      fontSize: 16,
-      fontWeight: '600',
     },
   });
 }
