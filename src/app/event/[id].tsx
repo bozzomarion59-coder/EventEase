@@ -1,22 +1,16 @@
 import { useCallback, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { Loading } from '@/components/Loading';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { deleteEvent, getEvent, getMemberInfo, toggleParticipation } from '@/services/storage';
 import { useDistance } from '@/hooks/useDistance';
 import { useEventWeather } from '@/hooks/useEventWeather';
+import { getMemberInfo } from '@/services/auth';
+import { deleteEvent, getEvent, toggleParticipation } from '@/services/events';
 import { Event } from '@/types';
 import { announceError } from '@/utils/accessibility';
 import { formatEventDate } from '@/utils/date';
@@ -105,19 +99,13 @@ export default function EventDetailScreen() {
   }
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Chargement de l’événement" />
-      </View>
-    );
+    return <Loading label="Chargement de l’événement" />;
   }
 
   if (!event) {
     return (
       <View style={styles.center}>
-        <Text style={styles.error} accessibilityRole="alert">
-          {error !== '' ? error : 'Cet événement n’existe plus.'}
-        </Text>
+        <ErrorMessage message={error !== '' ? error : 'Cet événement n’existe plus.'} style={styles.centeredText} />
       </View>
     );
   }
@@ -170,57 +158,40 @@ export default function EventDetailScreen() {
         <Text style={styles.cardValue}>{countText}</Text>
       </View>
 
-      {error !== '' && (
-        <Text style={styles.error} accessibilityRole="alert">{error}</Text>
-      )}
+      <ErrorMessage message={error} style={styles.centeredText} />
 
       {/* Participation : connecté = bouton bascule, visiteur = invitation à se connecter */}
       {user ? (
-        <Pressable
-          style={[styles.button, isParticipating && styles.buttonActive]}
+        <Button
+          title="Je participe"
+          variant={isParticipating ? 'success' : 'primary'}
+          icon={isParticipating ? 'checkmark' : 'add-circle-outline'}
           onPress={handleToggleParticipation}
-          accessibilityRole="button"
           accessibilityState={{ selected: isParticipating }}
           accessibilityLabel={isParticipating ? 'Je participe. Appuyer pour retirer ma participation' : 'Je participe'}
-        >
-          <Ionicons
-            name={isParticipating ? 'checkmark' : 'add-circle-outline'}
-            size={22}
-            color={isParticipating ? colors.success : colors.onPrimary}
-          />
-          <Text style={[styles.buttonText, isParticipating && styles.buttonTextActive]}>Je participe</Text>
-        </Pressable>
+        />
       ) : (
-        <Pressable
-          style={styles.buttonOutline}
-          onPress={() => router.push('/auth/login')}
-          accessibilityRole="button"
-          accessibilityLabel="Se connecter pour participer"
-        >
-          <Text style={styles.buttonOutlineText}>Se connecter pour participer</Text>
-        </Pressable>
+        <Button title="Se connecter pour participer" variant="outline" onPress={() => router.push('/auth/login')} />
       )}
       {isParticipating && <Text style={styles.hint}>Un nouvel appui retire la participation.</Text>}
 
-      {/* Modifier / Supprimer : seulement pour le créateur (storage.ts le vérifie aussi) */}
+      {/* Modifier / Supprimer : seulement pour le créateur (services/events.ts le vérifie aussi) */}
       {isCreator && (
         <View style={styles.creatorActions}>
-          <Pressable
-            style={styles.buttonOutline}
+          <Button
+            title="Modifier"
+            variant="outline"
             onPress={() => router.push(`/event/form?id=${event.id}`)}
-            accessibilityRole="button"
             accessibilityLabel="Modifier l’événement"
-          >
-            <Text style={styles.buttonOutlineText}>Modifier</Text>
-          </Pressable>
-          <Pressable
-            style={styles.buttonDanger}
+            style={styles.flexButton}
+          />
+          <Button
+            title="Supprimer"
+            variant="danger"
             onPress={handleDelete}
-            accessibilityRole="button"
             accessibilityLabel="Supprimer l’événement"
-          >
-            <Text style={styles.buttonDangerText}>Supprimer</Text>
-          </Pressable>
+            style={styles.flexButton}
+          />
         </View>
       )}
     </ScrollView>
@@ -290,73 +261,21 @@ function makeStyles(colors: Palette) {
       fontWeight: '600',
       color: colors.text,
     },
-    error: {
-      fontSize: 15,
-      color: colors.error,
-      textAlign: 'center',
-    },
-    button: {
-      minHeight: 52,
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: colors.primary,
-      borderWidth: 2,
-      borderColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    buttonActive: {
-      backgroundColor: colors.successBackground,
-      borderColor: colors.success,
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 17,
-      fontWeight: 'bold',
-    },
-    buttonTextActive: {
-      color: colors.success,
-    },
     hint: {
       fontSize: 14,
       color: colors.textMuted,
       textAlign: 'center',
       marginTop: -8,
     },
-    buttonOutline: {
-      flex: 1,
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface,
+    centeredText: {
+      textAlign: 'center',
     },
-    buttonOutlineText: {
-      color: colors.primary,
-      fontSize: 16,
-      fontWeight: '600',
+    flexButton: {
+      flex: 1,
     },
     creatorActions: {
       flexDirection: 'row',
       gap: 12,
-    },
-    buttonDanger: {
-      flex: 1,
-      minHeight: 48,
-      borderWidth: 1,
-      borderColor: colors.error,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface,
-    },
-    buttonDangerText: {
-      color: colors.error,
-      fontSize: 16,
-      fontWeight: '600',
     },
   });
 }

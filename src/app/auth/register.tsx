@@ -6,11 +6,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { TextField } from '@/components/TextField';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -51,7 +53,7 @@ export default function RegisterScreen() {
 
     try {
       await register(name, email, password, statut);
-      // Inscription réussie (et session ouverte par storage.ts) : on ferme
+      // Inscription réussie (et session ouverte par services/auth.ts) : on ferme
       // l'inscription et la connexion pour revenir aux onglets
       router.dismissAll();
     } catch (e) {
@@ -69,12 +71,9 @@ export default function RegisterScreen() {
         <Text style={styles.title} accessibilityRole="header">Créer un compte</Text>
         <Text style={styles.subtitle}>Rejoignez la communauté EventEase</Text>
 
-        {/* Champ Nom */}
-        <Text style={styles.label}>Nom complet *</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Nom complet *"
           placeholder="Jean Dupont"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Nom complet"
           value={name}
           onChangeText={setName}
@@ -82,12 +81,9 @@ export default function RegisterScreen() {
           autoComplete="name"
         />
 
-        {/* Champ Email */}
-        <Text style={styles.label}>Adresse e-mail *</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Adresse e-mail *"
           placeholder="exemple@email.com"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Adresse e-mail"
           value={email}
           onChangeText={setEmail}
@@ -96,12 +92,9 @@ export default function RegisterScreen() {
           autoComplete="email"
         />
 
-        {/* Champ Mot de passe */}
-        <Text style={styles.label}>Mot de passe *</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Mot de passe *"
           placeholder="8 caractères minimum"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Mot de passe, 8 caractères minimum"
           value={password}
           onChangeText={setPassword}
@@ -152,23 +145,8 @@ export default function RegisterScreen() {
           </Text>
         </Pressable>
 
-        {/* Zone d'erreur */}
-        {errorMessage !== '' && (
-          <Text style={styles.error} accessibilityRole="alert">
-            {errorMessage}
-          </Text>
-        )}
-
-        {/* Bouton d'inscription */}
-        <Pressable
-          style={styles.button}
-          onPress={handleRegister}
-          accessibilityRole="button"
-          accessibilityLabel="S’inscrire"
-        >
-          <Ionicons name="person-add-outline" size={22} color={colors.onPrimary} />
-          <Text style={styles.buttonText}>S’inscrire</Text>
-        </Pressable>
+        <ErrorMessage message={errorMessage} />
+        <Button title="S’inscrire" icon="person-add-outline" onPress={handleRegister} />
 
         {/* Retour à la connexion */}
         <Pressable
@@ -216,17 +194,6 @@ function makeStyles(colors: Palette) {
       fontWeight: '600',
       color: colors.text,
       marginBottom: 6,
-    },
-    input: {
-      minHeight: 48,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      color: colors.text,
-      fontSize: 16,
-      marginBottom: 16,
-      paddingHorizontal: 12,
     },
     statusContainer: {
       flexDirection: 'row',
@@ -279,25 +246,6 @@ function makeStyles(colors: Palette) {
       flex: 1,
       fontSize: 15,
       color: colors.text,
-    },
-    error: {
-      color: colors.error,
-      fontSize: 15,
-      marginBottom: 12,
-    },
-    button: {
-      minHeight: 48,
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
     },
     footer: {
       minHeight: 48,

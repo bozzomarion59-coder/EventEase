@@ -1,13 +1,14 @@
+import { Loading } from '@/components/Loading';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getEvents } from '@/services/storage';
+import { getEvents } from '@/services/events';
 import { Event } from '@/types';
 import { formatDayKey, formatTime, toDayKey } from '@/utils/date';
 import { isParticipant, sortByDate } from '@/utils/events';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import type { MarkedDates } from 'react-native-calendars/src/types';
 
@@ -96,11 +97,7 @@ export default function CalendarScreen() {
   }, [events, selectedDate]);
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <Loading label="Chargement du calendrier" />;
   }
 
   return (
@@ -195,12 +192,6 @@ function makeStyles(colors: Palette) {
     scrollContent: {
       padding: 16,
       gap: 16,
-    },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.background,
     },
     calendar: {
       borderWidth: 1,

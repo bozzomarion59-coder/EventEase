@@ -22,3 +22,13 @@ export type Event = {
   createdBy: string;    // id du créateur : lui seul peut modifier ou supprimer
   participants: string[]; // id des membres qui participent
 };
+
+// Ce que le formulaire envoie pour créer ou modifier un événement (l'id, le créateur et les participants sont gérés à part)
+export type EventInput = {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+};

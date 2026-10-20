@@ -1,15 +1,9 @@
 import { useMemo, useState } from 'react';
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Image, KeyboardAvoidingView, Platform, StyleSheet, Text } from 'react-native';
 import { Link, router } from 'expo-router';
+import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { TextField } from '@/components/TextField';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -47,10 +41,8 @@ export default function LoginScreen() {
       <Image source={require('../../../assets/images/eventease-icon.png')} style={styles.logo} />
       <Text style={styles.title} accessibilityRole="header">EventEase</Text>
       <Text style={styles.subtitle}>Les événements de l’association</Text>
-      <TextInput
-        style={styles.input}
+      <TextField
         placeholder="Email"
-        placeholderTextColor={colors.textMuted}
         accessibilityLabel="Adresse email"
         value={email}
         onChangeText={setEmail}
@@ -58,30 +50,16 @@ export default function LoginScreen() {
         autoCapitalize="none"
         autoComplete="email"
       />
-      <TextInput
-        style={styles.input}
+      <TextField
         placeholder="Mot de passe"
-        placeholderTextColor={colors.textMuted}
         accessibilityLabel="Mot de passe"
         secureTextEntry
         value={password}
         onChangeText={setPassword}
         autoComplete="password"
       />
-      {error !== '' && (
-        <Text style={styles.error} accessibilityRole="alert">
-          {error}
-        </Text>
-      )}
-      <Pressable
-        style={styles.button}
-        onPress={handleLogin}
-        accessibilityRole="button"
-        accessibilityLabel="Se connecter"
-      >
-        <Ionicons name="log-in-outline" size={22} color={colors.onPrimary} />
-        <Text style={styles.buttonText}>Se connecter</Text>
-      </Pressable>
+      <ErrorMessage message={error} />
+      <Button title="Se connecter" icon="log-in-outline" onPress={handleLogin} />
       <Link href="/auth/register" style={styles.link}>
         Pas encore de compte ? S’inscrire
       </Link>
@@ -116,36 +94,6 @@ function makeStyles(colors: Palette) {
       color: colors.textMuted,
       textAlign: 'center',
       marginBottom: 24,
-    },
-    input: {
-      minHeight: 48,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      color: colors.text,
-      fontSize: 16,
-      marginBottom: 12,
-      paddingHorizontal: 12,
-    },
-    button: {
-      minHeight: 48,
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    error: {
-      color: colors.error,
-      fontSize: 15,
-      marginBottom: 12,
     },
     link: {
       color: colors.primary,

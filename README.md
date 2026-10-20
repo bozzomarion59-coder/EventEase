@@ -65,10 +65,10 @@ src/
 │   ├── (tabs)/   Onglets : Événements, Calendrier, Mon profil
 │   ├── auth/     Connexion, inscription
 │   └── event/    Détail d'un événement, formulaire de création / modification
-├── services/     Accès aux données : storage.ts (stockage, joue le rôle de l'API), weather.ts (OpenWeather)
+├── services/     Accès aux données, jouent le rôle de l'API : auth.ts (comptes, session), events.ts (événements), weather.ts (OpenWeather)
 ├── hooks/        Logique réutilisable des écrans : météo et distance d'un événement
 ├── contexts/     Session de l'utilisateur et thème, partagés par toute l'app
-├── components/   Éléments d'interface partagés (titre des en-têtes)
+├── components/   Éléments d'interface partagés : bouton, champ de saisie, message d'erreur, chargement, titre des en-têtes
 ├── constants/    Couleurs des thèmes clair et sombre
 ├── utils/        Petites fonctions : dates, distance, participation, annonces d'erreur
 ├── data/         Événements de démonstration

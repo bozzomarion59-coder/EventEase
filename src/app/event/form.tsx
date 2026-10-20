@@ -1,22 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Button } from '@/components/Button';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { Loading } from '@/components/Loading';
+import { TextField } from '@/components/TextField';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { createEvent, getEvent, updateEvent } from '@/services/storage';
+import { createEvent, getEvent, updateEvent } from '@/services/events';
 import { geocodeCity } from '@/services/weather';
 import { announceError } from '@/utils/accessibility';
 import { formatTime } from '@/utils/date';
@@ -93,10 +87,11 @@ export default function EventFormScreen() {
         return;
       }
 
+      const input = { title, description, date: date.toISOString(), location, ...coords };
       if (id) {
-        await updateEvent(id, title, description, date.toISOString(), location, coords.latitude, coords.longitude, user.id);
+        await updateEvent(id, input, user.id);
       } else {
-        await createEvent(title, description, date.toISOString(), location, coords.latitude, coords.longitude, user.id);
+        await createEvent(input, user.id);
       }
       router.back();
     } catch (e) {
@@ -110,11 +105,7 @@ export default function EventFormScreen() {
   const timeText = formatTime(date);
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Chargement de l’événement" />
-      </View>
-    );
+    return <Loading label="Chargement de l’événement" />;
   }
 
   return (
@@ -127,35 +118,27 @@ export default function EventFormScreen() {
       <Stack.Screen options={{ title: isEdit ? 'Modifier l’événement' : 'Nouvel événement' }} />
 
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        {/* Champ Titre */}
-        <Text style={styles.label}>Titre *</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Titre *"
           placeholder="Ex. : Atelier couture"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Titre de l’événement, obligatoire"
           value={title}
           onChangeText={setTitle}
         />
 
-        {/* Champ Description */}
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
+        <TextField
+          label="Description"
           placeholder="Décrivez l’événement…"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Description de l’événement"
           value={description}
           onChangeText={setDescription}
           multiline
         />
 
-        {/* Champ Lieu : une ville, convertie en coordonnées à l'enregistrement */}
-        <Text style={styles.label}>Lieu *</Text>
-        <TextInput
-          style={styles.input}
+        {/* Lieu : une ville, convertie en coordonnées à l'enregistrement */}
+        <TextField
+          label="Lieu *"
           placeholder="Ex. : Douai"
-          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Ville de l’événement, obligatoire"
           value={location}
           onChangeText={setLocation}
@@ -217,25 +200,17 @@ export default function EventFormScreen() {
           </View>
         )}
 
-        {/* Zone d'erreur */}
-        {errorMessage !== '' && (
-          <Text style={styles.error} accessibilityRole="alert">
-            {errorMessage}
-          </Text>
-        )}
+        <ErrorMessage message={errorMessage} />
 
-        {/* Bouton de soumission, désactivé sans titre ou sans droit de modifier */}
-        <Pressable
-          style={[styles.button, isSubmitDisabled && styles.buttonDisabled]}
+        {/* Désactivé sans titre, sans lieu, sans droit de modifier ou pendant l'enregistrement */}
+        <Button
+          title={isEdit ? 'Enregistrer' : 'Créer l’événement'}
+          icon={isEdit ? 'save-outline' : 'add-circle-outline'}
           onPress={handleSubmit}
           disabled={isSubmitDisabled}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: isSubmitDisabled }}
           accessibilityLabel={isEdit ? 'Enregistrer les modifications' : 'Créer l’événement'}
-        >
-          <Ionicons name={isEdit ? 'save-outline' : 'add-circle-outline'} size={22} color={colors.onPrimary} />
-          <Text style={styles.buttonText}>{isEdit ? 'Enregistrer' : 'Créer l’événement'}</Text>
-        </Pressable>
+          style={styles.submit}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -244,12 +219,6 @@ export default function EventFormScreen() {
 // Styles calculés à partir des couleurs du thème actif (clair ou sombre)
 function makeStyles(colors: Palette) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.background,
-    },
     container: {
       flex: 1,
       backgroundColor: colors.background,
@@ -263,22 +232,6 @@ function makeStyles(colors: Palette) {
       fontWeight: '600',
       color: colors.text,
       marginBottom: 6,
-    },
-    input: {
-      minHeight: 48,
-      borderColor: colors.border,
-      borderWidth: 1,
-      borderRadius: 8,
-      backgroundColor: colors.surface,
-      color: colors.text,
-      fontSize: 16,
-      marginBottom: 16,
-      paddingHorizontal: 12,
-    },
-    textArea: {
-      minHeight: 110,
-      paddingTop: 12,
-      textAlignVertical: 'top',
     },
     iosPicker: {
       alignSelf: 'flex-start',
@@ -303,33 +256,12 @@ function makeStyles(colors: Palette) {
       alignItems: 'center',
       justifyContent: 'center',
     },
+    submit: {
+      marginTop: 4,
+    },
     dateButtonText: {
       fontSize: 16,
       color: colors.text,
-    },
-    error: {
-      color: colors.error,
-      fontSize: 15,
-      marginBottom: 12,
-    },
-    button: {
-      minHeight: 48,
-      flexDirection: 'row',
-      gap: 8,
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 4,
-    },
-    // Désactivé : bleu atténué plutôt que gris clair, pour garder un texte lisible
-    buttonDisabled: {
-      opacity: 0.5,
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: 'bold',
     },
   });
 }

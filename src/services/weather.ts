@@ -1,4 +1,4 @@
-// Tous les appels à l'API OpenWeather passent par ce fichier (comme storage.ts pour le stockage)
+// Tous les appels à l'API OpenWeather passent par ce fichier (comme auth.ts et events.ts pour le stockage)
 
 // Clé lue dans .env.local (non envoyé sur GitHub). Limite : elle reste lisible dans l'app installée
 const API_KEY = process.env.EXPO_PUBLIC_OPENWEATHER_API_KEY;

@@ -1,14 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Button } from '@/components/Button';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getEvents } from '@/services/storage';
+import { getEvents } from '@/services/events';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
 import { isParticipant, sortByDate } from '@/utils/events';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 // Écran de profil : infos du compte et déconnexion, ou invitation à se connecter pour un visiteur
 export default function ProfileScreen() {
@@ -53,14 +54,11 @@ export default function ProfileScreen() {
           <Text style={styles.visitorText}>
             Connectez-vous pour créer des événements et participer.
           </Text>
-          <Pressable
-            style={styles.button}
+          <Button
+            title="Se connecter"
             onPress={() => router.push('/auth/login')}
-            accessibilityRole="button"
             accessibilityLabel="Aller à la page de connexion"
-          >
-            <Text style={styles.buttonText}>Se connecter</Text>
-          </Pressable>
+          />
         </View>
         {themeSwitch}
       </View>
@@ -88,16 +86,13 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <Pressable
-          style={[styles.button, styles.logoutButton]}
+        <Button
+          title="Se déconnecter"
+          variant="danger"
           onPress={logout}
-          accessibilityRole="button"
           accessibilityLabel="Se déconnecter de votre compte"
-        >
-          <Text style={[styles.buttonText, styles.logoutButtonText]}>
-            Se déconnecter
-          </Text>
-        </Pressable>
+          style={styles.logoutButton}
+        />
       </View>
 
       {themeSwitch}
@@ -247,27 +242,8 @@ function makeStyles(colors: Palette) {
       borderRadius: 8,
       overflow: 'hidden',
     },
-    button: {
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      minHeight: 48, // zone tactile de 48 px minimum
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 8,
-    },
-    buttonText: {
-      color: colors.onPrimary,
-      fontSize: 16,
-      fontWeight: '600',
-    },
     logoutButton: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.error,
       marginTop: 16,
-    },
-    logoutButtonText: {
-      color: colors.error,
     },
   });
 }
