@@ -1,10 +1,23 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Layout des onglets principaux de l'application (Événements et Profil)
 export default function TabsLayout() {
+  const { colors } = useTheme();
+
   return (
-    <Tabs screenOptions={{ headerShown: true }}>
+    <Tabs
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        sceneStyle: { backgroundColor: colors.background },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{

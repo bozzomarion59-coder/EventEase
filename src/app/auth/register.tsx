@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
   KeyboardAvoidingView,
@@ -12,11 +12,15 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { User } from '@/types';
 
 // Écran d'inscription : nom, email, mot de passe, statut et consentement
 export default function RegisterScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { register } = useAuth();
 
   // États du formulaire
@@ -73,7 +77,7 @@ export default function RegisterScreen() {
         <TextInput
           style={styles.input}
           placeholder="Jean Dupont"
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Nom complet"
           value={name}
           onChangeText={setName}
@@ -86,7 +90,7 @@ export default function RegisterScreen() {
         <TextInput
           style={styles.input}
           placeholder="exemple@email.com"
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Adresse e-mail"
           value={email}
           onChangeText={setEmail}
@@ -100,7 +104,7 @@ export default function RegisterScreen() {
         <TextInput
           style={styles.input}
           placeholder="8 caractères minimum"
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Mot de passe, 8 caractères minimum"
           value={password}
           onChangeText={setPassword}
@@ -144,7 +148,7 @@ export default function RegisterScreen() {
           accessibilityLabel="J’accepte que mes données soient enregistrées sur ce téléphone"
         >
           <View style={[styles.checkbox, hasConsented && styles.checkboxChecked]}>
-            {hasConsented && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+            {hasConsented && <Ionicons name="checkmark" size={16} color={colors.onPrimary} />}
           </View>
           <Text style={styles.checkboxLabel}>
             J’accepte que mes données soient enregistrées sur ce téléphone *
@@ -165,7 +169,7 @@ export default function RegisterScreen() {
           accessibilityRole="button"
           accessibilityLabel="S’inscrire"
         >
-          <Ionicons name="person-add-outline" size={22} color="#FFFFFF" />
+          <Ionicons name="person-add-outline" size={22} color={colors.onPrimary} />
           <Text style={styles.buttonText}>S’inscrire</Text>
         </Pressable>
 
@@ -185,130 +189,132 @@ export default function RegisterScreen() {
   );
 }
 
-// Mêmes couleurs que l'écran de connexion (elles passeront dans le thème mercredi)
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F2',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555555',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 6,
-  },
-  input: {
-    minHeight: 48,
-    borderColor: '#6B6B6B',
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#1A1A1A',
-    fontSize: 16,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  statusButton: {
-    flex: 1,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#6B6B6B',
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  statusButtonActive: {
-    borderColor: '#0056B3',
-    borderWidth: 2,
-    backgroundColor: '#E6EEF8',
-  },
-  statusButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  statusButtonTextActive: {
-    color: '#0056B3',
-  },
-  checkboxContainer: {
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#0056B3',
-    borderRadius: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  checkboxChecked: {
-    backgroundColor: '#0056B3',
-  },
-  checkboxLabel: {
-    flex: 1,
-    fontSize: 15,
-    color: '#1A1A1A',
-  },
-  error: {
-    color: '#B00020',
-    fontSize: 15,
-    marginBottom: 12,
-  },
-  button: {
-    minHeight: 48,
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#0056B3',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  footer: {
-    minHeight: 48,
-    justifyContent: 'center',
-    marginTop: 12,
-  },
-  footerText: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    textAlign: 'center',
-  },
-  link: {
-    color: '#0056B3',
-    textDecorationLine: 'underline',
-  },
-});
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContainer: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 16,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: 24,
+    },
+    label: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 6,
+    },
+    input: {
+      minHeight: 48,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      fontSize: 16,
+      marginBottom: 16,
+      paddingHorizontal: 12,
+    },
+    statusContainer: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 16,
+    },
+    statusButton: {
+      flex: 1,
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    statusButtonActive: {
+      borderColor: colors.primary,
+      borderWidth: 2,
+      backgroundColor: colors.accent,
+    },
+    statusButtonText: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    statusButtonTextActive: {
+      color: colors.primary,
+    },
+    checkboxContainer: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    checkbox: {
+      width: 24,
+      height: 24,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      borderRadius: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    checkboxChecked: {
+      backgroundColor: colors.primary,
+    },
+    checkboxLabel: {
+      flex: 1,
+      fontSize: 15,
+      color: colors.text,
+    },
+    error: {
+      color: colors.error,
+      fontSize: 15,
+      marginBottom: 12,
+    },
+    button: {
+      minHeight: 48,
+      flexDirection: 'row',
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    footer: {
+      minHeight: 48,
+      justifyContent: 'center',
+      marginTop: 12,
+    },
+    footerText: {
+      fontSize: 16,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    link: {
+      color: colors.primary,
+      textDecorationLine: 'underline',
+    },
+  });
+}

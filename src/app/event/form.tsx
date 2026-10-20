@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
   ActivityIndicator,
@@ -14,11 +14,15 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { createEvent, getEvent, updateEvent } from '@/services/storage';
 
 // Formulaire d'événement : création (sans id) ou modification (avec ?id=), réservé au créateur
 export default function EventFormScreen() {
+  const { colors, mode } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { user } = useAuth();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEdit = Boolean(id); // un id dans l'adresse = modification
@@ -96,7 +100,7 @@ export default function EventFormScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0056B3" accessibilityLabel="Chargement de l’événement" />
+        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Chargement de l’événement" />
       </View>
     );
   }
@@ -116,7 +120,7 @@ export default function EventFormScreen() {
         <TextInput
           style={styles.input}
           placeholder="Ex. : Atelier couture"
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Titre de l’événement, obligatoire"
           value={title}
           onChangeText={setTitle}
@@ -127,7 +131,7 @@ export default function EventFormScreen() {
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Décrivez l’événement…"
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           accessibilityLabel="Description de l’événement"
           value={description}
           onChangeText={setDescription}
@@ -144,8 +148,8 @@ export default function EventFormScreen() {
               mode="datetime"
               display="compact"
               locale="fr-FR"
-              // L'app est en clair : sans ça, un iPhone en mode sombre affiche un texte gris clair illisible
-              themeVariant="light"
+              // Suit le thème de l'app, pas celui du téléphone (sinon texte illisible si les deux diffèrent)
+              themeVariant={mode}
               minimumDate={new Date()}
               onValueChange={(_, selected) => setDate(selected)}
               accessibilityLabel="Date et heure de l’événement"
@@ -167,7 +171,7 @@ export default function EventFormScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Date : ${date.toLocaleDateString('fr-FR')}. Modifier la date`}
             >
-              <Ionicons name="calendar-outline" size={20} color="#0056B3" />
+              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
               <Text style={styles.dateButtonText}>{date.toLocaleDateString('fr-FR')}</Text>
             </Pressable>
             <Pressable
@@ -183,7 +187,7 @@ export default function EventFormScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Heure : ${timeText}. Modifier l’heure`}
             >
-              <Ionicons name="time-outline" size={20} color="#0056B3" />
+              <Ionicons name="time-outline" size={20} color={colors.primary} />
               <Text style={styles.dateButtonText}>{timeText}</Text>
             </Pressable>
           </View>
@@ -205,7 +209,7 @@ export default function EventFormScreen() {
           accessibilityState={{ disabled: isSubmitDisabled }}
           accessibilityLabel={isEdit ? 'Enregistrer les modifications' : 'Créer l’événement'}
         >
-          <Ionicons name={isEdit ? 'save-outline' : 'add-circle-outline'} size={22} color="#FFFFFF" />
+          <Ionicons name={isEdit ? 'save-outline' : 'add-circle-outline'} size={22} color={colors.onPrimary} />
           <Text style={styles.buttonText}>{isEdit ? 'Enregistrer' : 'Créer l’événement'}</Text>
         </Pressable>
       </ScrollView>
@@ -213,93 +217,95 @@ export default function EventFormScreen() {
   );
 }
 
-// Mêmes couleurs que les autres écrans (elles passeront dans le thème mercredi)
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F2F2F2',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F2',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 16,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 6,
-  },
-  input: {
-    minHeight: 48,
-    borderColor: '#6B6B6B',
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#1A1A1A',
-    fontSize: 16,
-    marginBottom: 16,
-    paddingHorizontal: 12,
-  },
-  textArea: {
-    minHeight: 110,
-    paddingTop: 12,
-    textAlignVertical: 'top',
-  },
-  iosPicker: {
-    alignSelf: 'flex-start',
-    minHeight: 48,
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  dateRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-  },
-  dateButton: {
-    flex: 1,
-    minHeight: 48,
-    flexDirection: 'row',
-    gap: 8,
-    borderColor: '#6B6B6B',
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dateButtonText: {
-    fontSize: 16,
-    color: '#1A1A1A',
-  },
-  error: {
-    color: '#B00020',
-    fontSize: 15,
-    marginBottom: 12,
-  },
-  button: {
-    minHeight: 48,
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#0056B3',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 4,
-  },
-  // Désactivé : bleu atténué plutôt que gris clair, pour garder un texte lisible
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContainer: {
+      flexGrow: 1,
+      padding: 16,
+    },
+    label: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 6,
+    },
+    input: {
+      minHeight: 48,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      fontSize: 16,
+      marginBottom: 16,
+      paddingHorizontal: 12,
+    },
+    textArea: {
+      minHeight: 110,
+      paddingTop: 12,
+      textAlignVertical: 'top',
+    },
+    iosPicker: {
+      alignSelf: 'flex-start',
+      minHeight: 48,
+      justifyContent: 'center',
+      marginBottom: 16,
+    },
+    dateRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginBottom: 16,
+    },
+    dateButton: {
+      flex: 1,
+      minHeight: 48,
+      flexDirection: 'row',
+      gap: 8,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    dateButtonText: {
+      fontSize: 16,
+      color: colors.text,
+    },
+    error: {
+      color: colors.error,
+      fontSize: 15,
+      marginBottom: 12,
+    },
+    button: {
+      minHeight: 48,
+      flexDirection: 'row',
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 4,
+    },
+    // Désactivé : bleu atténué plutôt que gris clair, pour garder un texte lisible
+    buttonDisabled: {
+      opacity: 0.5,
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+  });
+}

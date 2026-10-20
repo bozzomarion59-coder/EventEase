@@ -6,7 +6,7 @@
 |---|---|---|---|
 | 1 | Lundi 19/10 | Projet Expo, écrans de base, navigation, connexion et inscription | Terminé |
 | 2 | Mardi 20/10 | CRUD des événements, « participé », persistance AsyncStorage | Terminé (avancé lundi après-midi, testé mardi matin) |
-| 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | |
+| 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | Thème clair / sombre fait mardi |
 | 4 | Jeudi 22/10 | Gel à midi, tests sur iPhone, document technique, soutenance | |
 
 ## Décisions
@@ -38,6 +38,11 @@
 | 19/10 | Retour après connexion / inscription | Connexion : retour à l'écran précédent (`router.back()`). Inscription : fermeture de tous les écrans ouverts par-dessus les onglets (`router.dismissAll()`) | Pas de rôle, donc pas de redirection par rôle. Après l'inscription, un simple retour ramènerait à l'écran de connexion |
 | 19/10 | Accessibilité | Zones tactiles de 48 px minimum (`minHeight`), libellés VoiceOver sur les champs, boutons et onglets, erreurs annoncées après une seconde, apostrophe typographique `’` dans les textes | Sur iPhone, une annonce faite pendant la mise à jour de l'écran est annulée. L'apostrophe droite est refusée par le lint dans le JSX |
 | 19/10 | Couleurs | Écrites en dur dans chaque écran, identiques partout (bleu `#0056B3`, erreur `#B00020`, fond `#F2F2F2`) | Le thème clair / sombre est prévu mercredi : elles passeront alors dans un seul fichier |
+| 20/10 | Ordre des bonus | Thème clair / sombre d'abord, puis calendrier (`react-native-calendars`, imposé par le cahier des charges) | Le thème touche tous les écrans : le faire avant évite de reprendre l'écran Calendrier ensuite |
+| 20/10 | Thème clair / sombre | Couleurs dans `src/constants/colors.ts` (une palette claire, une sombre), `ThemeContext` qui donne `useTheme()` aux écrans, styles calculés par `makeStyles(colors)` dans chaque écran | Même organisation que mon projet précédent. Une couleur se change à un seul endroit |
+| 20/10 | Choix du thème | Au premier lancement, thème du téléphone. Ensuite, interrupteur « Mode sombre » dans le Profil (visiteurs compris), choix mémorisé dans AsyncStorage | L'utilisateur garde son choix en rouvrant l'app |
+| 20/10 | Contrastes du thème | Thème clair : couleurs déjà utilisées dans les écrans. Thème sombre : bleu éclairci avec texte foncé dessus (`onPrimary`). Fonds de badge ajoutés (`accent`, `successBackground`), contrastes calculés (5,4:1 minimum) | Respecter WCAG AA (4,5:1 pour le texte, 3:1 pour les bordures) dans les deux thèmes |
+| 20/10 | Sélecteur de date | `themeVariant={mode}` au lieu de `"light"` | Le sélecteur suit le thème de l'app, pas celui du téléphone |
 | 19/10 | Participation | Chaque événement garde la liste des identifiants de ses participants (`participants: string[]`). « Je participe » ajoute ou retire l'utilisateur de cette liste | Un seul endroit à lire pour afficher le nombre de participants et savoir si je participe |
 | 19/10 | Format des dates | Dates enregistrées au format ISO, affichées en français par une seule fonction `formatEventDate` (`src/utils/date.ts`) | Le format ISO se trie et se relit sans ambiguïté. Une seule fonction pour que l'affichage soit le même partout (liste, détail, profil) |
 | 19/10 | Sélecteur de date | `@react-native-community/datetimepicker`, installé avec `npx expo install`. iPhone : un sélecteur date + heure. Android : deux boutons, un pour la date et un pour l'heure. Dates passées interdites | Inclus dans Expo Go, donc pas besoin de build de développement. Android n'a pas de mode « date + heure » |
@@ -69,3 +74,6 @@
 - « Mes participations » testé sur iPhone : sans participation, après « Je participe », après l'annulation, et en appuyant sur une ligne (ouvre le détail). Lint et typecheck sans erreur.
 - PR #5 (`feat/evenements-crud`) créée et fusionnée par moi dans le terminal. Branche conservée.
 - Erreur « Tried to register two views with the same name RNDateTimePicker » après `git pull`. Cause : le rechargement à chaud a renvoyé le module du sélecteur alors que l'app tournait déjà. Résolue en fermant puis en rouvrant Expo Go.
+- Thème clair / sombre (branche `feat/theme`) : palettes, `ThemeContext`, en-têtes, onglets et 6 écrans convertis, interrupteur dans le Profil. Testé sur iPhone dans les deux thèmes, choix conservé après fermeture de l'app.
+- Interrupteur « Mode sombre » décalé vers le haut : sur iPhone, `Switch` s'applique `alignSelf: 'flex-start'` (code de React Native). Corrigé avec `alignSelf: 'center'`.
+- Le bouton ⚙️ en haut à droite des captures est celui d'Expo Go, pas de l'app.
