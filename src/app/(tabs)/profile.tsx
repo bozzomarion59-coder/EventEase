@@ -1,11 +1,33 @@
+import { useCallback, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { getEvents } from '@/services/storage';
+import { Event } from '@/types';
+import { formatEventDate } from '@/utils/date';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 // Écran de profil : infos du compte et déconnexion, ou invitation à se connecter pour un visiteur
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [participations, setParticipations] = useState<Event[]>([]);
+
+  // Recharge « Mes participations » à chaque retour sur l'onglet : les événements dont la liste contient mon id
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      getEvents()
+        .then((events) =>
+          setParticipations(
+            events
+              .filter((e) => e.participants.includes(user.id))
+              .sort((a, b) => a.date.localeCompare(b.date)),
+          ),
+        )
+        .catch(() => setParticipations([]));
+    }, [user]),
+  );
 
   // 1. ÉTAT VISITEUR (Non connecté)
   if (!user) {
@@ -30,7 +52,7 @@ export default function ProfileScreen() {
 
   // 2. ÉTAT CONNECTÉ
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
       <View style={styles.card}>
         <View style={styles.infoGroup}>
           <Text style={styles.label}>Nom complet</Text>
@@ -60,7 +82,31 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
       </View>
-    </View>
+
+      {/* Mes participations : un appui ouvre le détail de l'événement */}
+      <Text style={styles.sectionTitle} accessibilityRole="header">Mes participations</Text>
+      {participations.length === 0 ? (
+        <Text style={styles.emptyText}>
+          Vous ne participez à aucun événement. Ouvrez un événement et appuyez sur « Je participe ».
+        </Text>
+      ) : (
+        participations.map((event) => (
+          <Pressable
+            key={event.id}
+            style={styles.participationCard}
+            onPress={() => router.push(`/event/${event.id}`)}
+            accessibilityRole="button"
+            accessibilityLabel={`${event.title}, ${formatEventDate(event.date)}`}
+          >
+            <Ionicons name="checkmark" size={22} color="#1B6E2D" />
+            <View style={styles.participationText}>
+              <Text style={styles.participationTitle}>{event.title}</Text>
+              <Text style={styles.participationDate}>{formatEventDate(event.date)}</Text>
+            </View>
+          </Pressable>
+        ))
+      )}
+    </ScrollView>
   );
 }
 
@@ -71,6 +117,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2F2F2',
     padding: 24,
     justifyContent: 'center',
+  },
+  scroll: {
+    flex: 1,
+    backgroundColor: '#F2F2F2',
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginTop: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#555555',
+  },
+  participationCard: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#6B6B6B',
+    borderRadius: 8,
+    padding: 14,
+  },
+  participationText: {
+    flex: 1,
+    gap: 2,
+  },
+  participationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  participationDate: {
+    fontSize: 14,
+    color: '#555555',
   },
   card: {
     backgroundColor: '#FFFFFF',
