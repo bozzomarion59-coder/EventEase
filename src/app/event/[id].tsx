@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
   ActivityIndicator,
@@ -11,13 +11,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { deleteEvent, getEvent, getMemberInfo, toggleParticipation } from '@/services/storage';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
 
 // Écran de détail : infos, participation, et Modifier / Supprimer pour le créateur
 export default function EventDetailScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
@@ -98,7 +102,7 @@ export default function EventDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0056B3" accessibilityLabel="Chargement de l’événement" />
+        <ActivityIndicator size="large" color={colors.primary} accessibilityLabel="Chargement de l’événement" />
       </View>
     );
   }
@@ -151,7 +155,7 @@ export default function EventDetailScreen() {
           <Ionicons
             name={isParticipating ? 'checkmark' : 'add-circle-outline'}
             size={22}
-            color={isParticipating ? '#1B6E2D' : '#FFFFFF'}
+            color={isParticipating ? colors.success : colors.onPrimary}
           />
           <Text style={[styles.buttonText, isParticipating && styles.buttonTextActive]}>Je participe</Text>
         </Pressable>
@@ -192,125 +196,127 @@ export default function EventDetailScreen() {
   );
 }
 
-// Mêmes couleurs que les autres écrans (elles passeront dans le thème mercredi)
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#F2F2F2',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F2',
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-  },
-  meta: {
-    gap: 4,
-  },
-  metaText: {
-    fontSize: 15,
-    color: '#555555',
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#1A1A1A',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#6B6B6B',
-    borderRadius: 8,
-    padding: 14,
-    gap: 4,
-  },
-  cardLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#555555',
-    textTransform: 'uppercase',
-  },
-  cardValue: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  error: {
-    fontSize: 15,
-    color: '#B00020',
-    textAlign: 'center',
-  },
-  button: {
-    minHeight: 52,
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#0056B3',
-    borderWidth: 2,
-    borderColor: '#0056B3',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonActive: {
-    backgroundColor: '#E3F1E6',
-    borderColor: '#1B6E2D',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: 'bold',
-  },
-  buttonTextActive: {
-    color: '#1B6E2D',
-  },
-  hint: {
-    fontSize: 14,
-    color: '#555555',
-    textAlign: 'center',
-    marginTop: -8,
-  },
-  buttonOutline: {
-    flex: 1,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#0056B3',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  buttonOutlineText: {
-    color: '#0056B3',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  creatorActions: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  buttonDanger: {
-    flex: 1,
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: '#B00020',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  buttonDangerText: {
-    color: '#B00020',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 16,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 16,
+      gap: 16,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: colors.text,
+    },
+    meta: {
+      gap: 4,
+    },
+    metaText: {
+      fontSize: 15,
+      color: colors.textMuted,
+    },
+    description: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: colors.text,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      padding: 14,
+      gap: 4,
+    },
+    cardLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textMuted,
+      textTransform: 'uppercase',
+    },
+    cardValue: {
+      fontSize: 17,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    error: {
+      fontSize: 15,
+      color: colors.error,
+      textAlign: 'center',
+    },
+    button: {
+      minHeight: 52,
+      flexDirection: 'row',
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderWidth: 2,
+      borderColor: colors.primary,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonActive: {
+      backgroundColor: colors.successBackground,
+      borderColor: colors.success,
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 17,
+      fontWeight: 'bold',
+    },
+    buttonTextActive: {
+      color: colors.success,
+    },
+    hint: {
+      fontSize: 14,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginTop: -8,
+    },
+    buttonOutline: {
+      flex: 1,
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colors.primary,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+    },
+    buttonOutlineText: {
+      color: colors.primary,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    creatorActions: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    buttonDanger: {
+      flex: 1,
+      minHeight: 48,
+      borderWidth: 1,
+      borderColor: colors.error,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+    },
+    buttonDangerText: {
+      color: colors.error,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });
+}

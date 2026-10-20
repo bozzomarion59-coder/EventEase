@@ -1,14 +1,18 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/storage';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
 // Écran de profil : infos du compte et déconnexion, ou invitation à se connecter pour un visiteur
 export default function ProfileScreen() {
+  const { colors, mode, toggleTheme } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { user, logout } = useAuth();
   const router = useRouter();
   const [participations, setParticipations] = useState<Event[]>([]);
@@ -29,6 +33,21 @@ export default function ProfileScreen() {
     }, [user]),
   );
 
+  // Interrupteur du mode sombre, proposé aux visiteurs comme aux membres
+  const themeSwitch = (
+    <View style={styles.themeRow}>
+      <Text style={styles.themeLabel}>Mode sombre</Text>
+      <Switch
+        value={mode === 'dark'}
+        onValueChange={toggleTheme}
+        trackColor={{ false: colors.border, true: colors.primary }}
+        ios_backgroundColor={colors.border}
+        accessibilityLabel="Mode sombre"
+        style={styles.themeSwitch}
+      />
+    </View>
+  );
+
   // 1. ÉTAT VISITEUR (Non connecté)
   if (!user) {
     return (
@@ -46,6 +65,7 @@ export default function ProfileScreen() {
             <Text style={styles.buttonText}>Se connecter</Text>
           </Pressable>
         </View>
+        {themeSwitch}
       </View>
     );
   }
@@ -83,6 +103,8 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
+      {themeSwitch}
+
       {/* Mes participations : un appui ouvre le détail de l'événement */}
       <Text style={styles.sectionTitle} accessibilityRole="header">Mes participations</Text>
       {participations.length === 0 ? (
@@ -98,7 +120,7 @@ export default function ProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel={`${event.title}, ${formatEventDate(event.date)}`}
           >
-            <Ionicons name="checkmark" size={22} color="#1B6E2D" />
+            <Ionicons name="checkmark" size={22} color={colors.success} />
             <View style={styles.participationText}>
               <Text style={styles.participationTitle}>{event.title}</Text>
               <Text style={styles.participationDate}>{formatEventDate(event.date)}</Text>
@@ -110,122 +132,145 @@ export default function ProfileScreen() {
   );
 }
 
-// Mêmes couleurs que la connexion et l'inscription (elles passeront dans le thème mercredi)
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F2F2F2',
-    padding: 24,
-    justifyContent: 'center',
-  },
-  scroll: {
-    flex: 1,
-    backgroundColor: '#F2F2F2',
-  },
-  scrollContent: {
-    padding: 16,
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginTop: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: '#555555',
-  },
-  participationCard: {
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#6B6B6B',
-    borderRadius: 8,
-    padding: 14,
-  },
-  participationText: {
-    flex: 1,
-    gap: 2,
-  },
-  participationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  participationDate: {
-    fontSize: 14,
-    color: '#555555',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: '#6B6B6B',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  visitorText: {
-    fontSize: 16,
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 24,
-  },
-  infoGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#555555',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#1A1A1A',
-  },
-  badge: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0056B3',
-    backgroundColor: '#E6EEF8',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  button: {
-    backgroundColor: '#0056B3',
-    borderRadius: 8,
-    minHeight: 48, // zone tactile de 48 px minimum
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#B00020',
-    marginTop: 16,
-  },
-  logoutButtonText: {
-    color: '#B00020',
-  },
-});
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      padding: 24,
+      justifyContent: 'center',
+    },
+    scroll: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollContent: {
+      padding: 16,
+      gap: 12,
+    },
+    themeRow: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      paddingHorizontal: 14,
+      marginTop: 12,
+    },
+    // Sur iPhone, Switch se place en haut de sa ligne (alignSelf: 'flex-start') : on le recentre
+    themeSwitch: {
+      alignSelf: 'center',
+    },
+    themeLabel: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginTop: 8,
+    },
+    emptyText: {
+      fontSize: 15,
+      color: colors.textMuted,
+    },
+    participationCard: {
+      minHeight: 48,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      padding: 14,
+    },
+    participationText: {
+      flex: 1,
+      gap: 2,
+    },
+    participationTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    participationDate: {
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 8,
+      padding: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    visitorText: {
+      fontSize: 16,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: 24,
+      lineHeight: 24,
+    },
+    infoGroup: {
+      marginBottom: 20,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 4,
+    },
+    value: {
+      fontSize: 16,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    badge: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+      backgroundColor: colors.accent,
+      alignSelf: 'flex-start',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+      overflow: 'hidden',
+    },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      minHeight: 48, // zone tactile de 48 px minimum
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    logoutButton: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.error,
+      marginTop: 16,
+    },
+    logoutButtonText: {
+      color: colors.error,
+    },
+  });
+}

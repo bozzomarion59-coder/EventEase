@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   AccessibilityInfo,
   KeyboardAvoidingView,
@@ -10,10 +10,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
+import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 // Écran de connexion : vérifie l'email et le mot de passe dans le stockage local
 export default function LoginScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,7 +49,7 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#555555"
+        placeholderTextColor={colors.textMuted}
         accessibilityLabel="Adresse email"
         value={email}
         onChangeText={setEmail}
@@ -56,7 +60,7 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Mot de passe"
-        placeholderTextColor="#555555"
+        placeholderTextColor={colors.textMuted}
         accessibilityLabel="Mot de passe"
         secureTextEntry
         value={password}
@@ -74,7 +78,7 @@ export default function LoginScreen() {
         accessibilityRole="button"
         accessibilityLabel="Se connecter"
       >
-        <Ionicons name="log-in-outline" size={22} color="#FFFFFF" />
+        <Ionicons name="log-in-outline" size={22} color={colors.onPrimary} />
         <Text style={styles.buttonText}>Se connecter</Text>
       </Pressable>
       <Link href="/auth/register" style={styles.link}>
@@ -84,56 +88,58 @@ export default function LoginScreen() {
   );
 }
 
-// Couleurs écrites en dur pour l'instant : elles passeront dans le thème mercredi
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#F2F2F2',
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  input: {
-    minHeight: 48,
-    borderColor: '#6B6B6B',
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    color: '#1A1A1A',
-    fontSize: 16,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-  },
-  button: {
-    minHeight: 48,
-    flexDirection: 'row',
-    gap: 8,
-    backgroundColor: '#0056B3',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  error: {
-    color: '#B00020',
-    fontSize: 15,
-    marginBottom: 12,
-  },
-  link: {
-    color: '#0056B3',
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 20,
-    textDecorationLine: 'underline',
-  },
-});
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 16,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: colors.text,
+      marginBottom: 24,
+      textAlign: 'center',
+    },
+    input: {
+      minHeight: 48,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 8,
+      backgroundColor: colors.surface,
+      color: colors.text,
+      fontSize: 16,
+      marginBottom: 12,
+      paddingHorizontal: 12,
+    },
+    button: {
+      minHeight: 48,
+      flexDirection: 'row',
+      gap: 8,
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    buttonText: {
+      color: colors.onPrimary,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    error: {
+      color: colors.error,
+      fontSize: 15,
+      marginBottom: 12,
+    },
+    link: {
+      color: colors.primary,
+      fontSize: 16,
+      textAlign: 'center',
+      marginTop: 20,
+      textDecorationLine: 'underline',
+    },
+  });
+}
