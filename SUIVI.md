@@ -6,7 +6,7 @@
 |---|---|---|---|
 | 1 | Lundi 19/10 | Projet Expo, écrans de base, navigation, connexion et inscription | Terminé |
 | 2 | Mardi 20/10 | CRUD des événements, « participé », persistance AsyncStorage | Terminé (avancé lundi après-midi, testé mardi matin) |
-| 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | Thème clair / sombre fait mardi |
+| 3 | Mercredi 21/10 | Bonus : calendrier, météo, thème, icône et splash | Thème clair / sombre et calendrier faits mardi |
 | 4 | Jeudi 22/10 | Gel à midi, tests sur iPhone, document technique, soutenance | |
 
 ## Décisions
@@ -43,6 +43,11 @@
 | 20/10 | Choix du thème | Au premier lancement, thème du téléphone. Ensuite, interrupteur « Mode sombre » dans le Profil (visiteurs compris), choix mémorisé dans AsyncStorage | L'utilisateur garde son choix en rouvrant l'app |
 | 20/10 | Contrastes du thème | Thème clair : couleurs déjà utilisées dans les écrans. Thème sombre : bleu éclairci avec texte foncé dessus (`onPrimary`). Fonds de badge ajoutés (`accent`, `successBackground`), contrastes calculés (5,4:1 minimum) | Respecter WCAG AA (4,5:1 pour le texte, 3:1 pour les bordures) dans les deux thèmes |
 | 20/10 | Sélecteur de date | `themeVariant={mode}` au lieu de `"light"` | Le sélecteur suit le thème de l'app, pas celui du téléphone |
+| 20/10 | Alertes npm | `npm audit fix --force` non lancé malgré 30 alertes après l'installation de `react-native-calendars` | Il changerait des versions choisies pour la SDK 57 et pourrait casser l'app. Alertes surtout dans les outils de développement |
+| 20/10 | Calendrier | Onglet « Calendrier » entre Événements et Profil, visible sans connexion. `react-native-calendars` installé avec `npx expo install`. En français, semaine commençant le lundi. Un point sous chaque jour qui a un événement : vert si je participe, bleu sinon, avec une légende. Un appui sur un jour liste ses événements, un appui sur un événement ouvre le détail | Demandé par le cahier des charges (librairie imposée). Librairie en JavaScript seulement : fonctionne dans Expo Go. Vert comme la coche de « Mes participations » |
+| 20/10 | Jour d'un événement | Fonction `toDayKey` dans `utils/date.ts` (jour local), pas `toISOString()` ni `split('T')` | La date est enregistrée en UTC : un événement le 25 à 1 h du matin serait affiché le 24 |
+| 20/10 | Calendrier et thème | `key={mode}` sur le calendrier, `onPrimary` pour le jour sélectionné et `selectedDotColor` sur chaque point | La librairie ne relit pas ses couleurs. Sans `selectedDotColor`, le point bleu disparaît dans le cercle bleu du jour sélectionné |
+| 20/10 | Accessibilité | Pas d'ajout VoiceOver au-delà de l'existant | Non demandé par le cahier des charges |
 | 19/10 | Participation | Chaque événement garde la liste des identifiants de ses participants (`participants: string[]`). « Je participe » ajoute ou retire l'utilisateur de cette liste | Un seul endroit à lire pour afficher le nombre de participants et savoir si je participe |
 | 19/10 | Format des dates | Dates enregistrées au format ISO, affichées en français par une seule fonction `formatEventDate` (`src/utils/date.ts`) | Le format ISO se trie et se relit sans ambiguïté. Une seule fonction pour que l'affichage soit le même partout (liste, détail, profil) |
 | 19/10 | Sélecteur de date | `@react-native-community/datetimepicker`, installé avec `npx expo install`. iPhone : un sélecteur date + heure. Android : deux boutons, un pour la date et un pour l'heure. Dates passées interdites | Inclus dans Expo Go, donc pas besoin de build de développement. Android n'a pas de mode « date + heure » |
@@ -77,3 +82,4 @@
 - Thème clair / sombre (branche `feat/theme`) : palettes, `ThemeContext`, en-têtes, onglets et 6 écrans convertis, interrupteur dans le Profil. Testé sur iPhone dans les deux thèmes, choix conservé après fermeture de l'app.
 - Interrupteur « Mode sombre » décalé vers le haut : sur iPhone, `Switch` s'applique `alignSelf: 'flex-start'` (code de React Native). Corrigé avec `alignSelf: 'center'`.
 - Le bouton ⚙️ en haut à droite des captures est celui d'Expo Go, pas de l'app.
+- Calendrier (branche `feat/calendrier`) : onglet, calendrier en français aux couleurs du thème, points par jour, liste du jour choisi. Bugs corrigés : jour en UTC, nouvel événement absent au retour sur l'onglet (`useEffect` → `useFocusEffect`), point invisible sur le jour sélectionné, blanc écrit en dur. Testé sur iPhone.

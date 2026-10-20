@@ -1,8 +1,8 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
+import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
 
-// Layout des onglets principaux de l'application (Événements et Profil)
+// Layout des onglets principaux de l'application (Événements, Calendrier et Profil)
 export default function TabsLayout() {
   const { colors } = useTheme();
 
@@ -25,6 +25,16 @@ export default function TabsLayout() {
           tabBarAccessibilityLabel: 'Liste des événements',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: 'Calendrier',
+          tabBarAccessibilityLabel: 'Calendrier des événements',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="today-outline" color={color} size={size} />
           ),
         }}
       />
