@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  AccessibilityInfo,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -16,6 +15,7 @@ import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { User } from '@/types';
+import { announceError } from '@/utils/accessibility';
 
 // Écran d'inscription : nom, email, mot de passe, statut et consentement
 export default function RegisterScreen() {
@@ -34,10 +34,7 @@ export default function RegisterScreen() {
   // Affiche l'erreur et la fait lire par VoiceOver / TalkBack
   function showError(message: string) {
     setErrorMessage(message);
-    // Annonce différée d'une seconde, sinon elle est annulée sur iPhone
-    setTimeout(() => {
-      AccessibilityInfo.announceForAccessibility(`Erreur : ${message}`);
-    }, 1000);
+    announceError(message);
   }
 
   async function handleRegister() {

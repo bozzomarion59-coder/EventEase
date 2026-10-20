@@ -8,6 +8,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/storage';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
+import { isParticipant, sortByDate } from '@/utils/events';
 
 // Écran d'accueil : liste des événements triés par date, visible sans connexion
 export default function EventListScreen() {
@@ -23,7 +24,7 @@ export default function EventListScreen() {
     try {
       setError('');
       const data = await getEvents();
-      setEvents([...data].sort((a, b) => a.date.localeCompare(b.date)));
+      setEvents(sortByDate(data));
     } catch {
       setError('Impossible de charger les événements.');
     } finally {
@@ -65,7 +66,7 @@ export default function EventListScreen() {
       keyExtractor={(item) => item.id}
       ListEmptyComponent={<Text style={styles.empty}>Aucun événement pour l’instant.</Text>}
       renderItem={({ item }) => {
-        const isParticipating = user !== null && item.participants.includes(user.id);
+        const isParticipating = isParticipant(item, user?.id);
         const count = item.participants.length;
         const countText = count === 0 ? 'Aucun participant' : `${count} participant${count > 1 ? 's' : ''}`;
 

@@ -7,7 +7,7 @@ import * as Crypto from 'expo-crypto';
 // Les clés sous lesquelles les données sont rangées dans AsyncStorage
 const USERS_KEY = 'users';
 const SESSION_KEY = 'session';
-const EVENTS_KEY = 'events';
+const EVENTS_KEY = 'events_v3'; // v3 : démos avec un lieu et des dates proches (rechargées au prochain lancement)
 
 // ==========================================
 // GESTION DES UTILISATEURS
@@ -141,6 +141,9 @@ export async function createEvent(
   title: string,
   description: string,
   date: string,
+  location: string,
+  latitude: number,
+  longitude: number,
   userId: string
 ): Promise<Event> {
   const cleanTitle = title.trim();
@@ -156,6 +159,9 @@ export async function createEvent(
     title: cleanTitle,
     description: description.trim(),
     date,
+    location: location.trim(),
+    latitude,
+    longitude,
     createdBy: userId,
     participants: [],
   };
@@ -170,6 +176,9 @@ export async function updateEvent(
   title: string,
   description: string,
   date: string,
+  location: string,
+  latitude: number,
+  longitude: number,
   userId: string
 ): Promise<void> {
   const events = await getEvents();
@@ -189,7 +198,9 @@ export async function updateEvent(
   }
 
   const updatedEvents = events.map((e) =>
-    e.id === id ? { ...e, title: cleanTitle, description: description.trim(), date } : e
+    e.id === id
+      ? { ...e, title: cleanTitle, description: description.trim(), date, location: location.trim(), latitude, longitude }
+      : e
   );
 
   await saveEvents(updatedEvents);

@@ -1,56 +1,95 @@
-# Welcome to your Expo app 👋
+# EventEase
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Application mobile de l'association **EventEase** (Douai) : les membres et les bénévoles consultent les événements de l'association (conférences, ateliers, sorties), en créent de nouveaux et indiquent leur participation.
 
-## Get started
+Prototype réalisé en 4 jours (du 19 au 22 octobre 2026) dans le cadre de la formation Concepteur Développeur d'Applications, à partir d'un cahier des charges.
 
-1. Install dependencies
+## Fonctionnalités
 
-   ```bash
-   npm install
-   ```
+**Obligatoires**
+- Inscription et connexion, sans serveur : comptes enregistrés sur le téléphone, mots de passe hachés (SHA-256 + sel)
+- Liste des événements (titre, date, description, nombre de participants), visible sans connexion
+- Création, modification et suppression d'un événement (seul le créateur peut modifier ou supprimer)
+- Participation à un événement (« Je participe ») et liste de mes participations dans le profil
+- Données conservées sur le téléphone (AsyncStorage)
 
-2. Start the app
+**Bonus**
+- Calendrier des événements (`react-native-calendars`) : un point par jour, vert si je participe
+- Météo prévue pour l'événement (API OpenWeather)
+- Distance entre l'utilisateur et le lieu de l'événement (géolocalisation)
+- Thème clair / sombre, choix mémorisé
+- Icône, splash screen et icône dans les en-têtes
 
-   ```bash
-   npx expo start
-   ```
+## Technologies
 
-In the output, you'll find options to open the app in a
+| Besoin | Choix |
+|---|---|
+| Application mobile | React Native avec Expo SDK 57, TypeScript |
+| Navigation | Expo Router (construit sur React Navigation) : onglets et pile d'écrans |
+| Stockage local | AsyncStorage |
+| Sécurité des mots de passe | `expo-crypto` (SHA-256 + sel propre à chaque utilisateur) |
+| Calendrier | `react-native-calendars` |
+| Date et heure | `@react-native-community/datetimepicker` |
+| Météo et géocodage | API OpenWeather (prévision gratuite sur 5 jours) |
+| Géolocalisation | `expo-location` |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Installation
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Prérequis : Node.js, et l'application **Expo Go** sur le téléphone.
 
 ```bash
-npm run reset-project
+git clone https://github.com/bozzomarion59-coder/EventEase.git
+cd EventEase
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Créer à la racine un fichier **`.env.local`** avec une clé gratuite d'[OpenWeather](https://openweathermap.org/api) (ce fichier n'est pas envoyé sur GitHub) :
 
-### Other setup steps
+```
+EXPO_PUBLIC_OPENWEATHER_API_KEY=votre_cle
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Lancer l'application, puis scanner le QR code avec l'appareil photo (iPhone) ou Expo Go (Android) :
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Au premier lancement, trois événements de démonstration sont chargés. Il suffit de créer un compte pour participer et créer des événements.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Architecture
 
-## Join the community
+```
+src/
+├── app/          Écrans (Expo Router : chaque fichier est une page)
+│   ├── (tabs)/   Onglets : Événements, Calendrier, Mon profil
+│   ├── auth/     Connexion, inscription
+│   └── event/    Détail d'un événement, formulaire de création / modification
+├── services/     Accès aux données : storage.ts (stockage, joue le rôle de l'API), weather.ts (OpenWeather)
+├── hooks/        Logique réutilisable des écrans : météo et distance d'un événement
+├── contexts/     Session de l'utilisateur et thème, partagés par toute l'app
+├── components/   Éléments d'interface partagés (titre des en-têtes)
+├── constants/    Couleurs des thèmes clair et sombre
+├── utils/        Petites fonctions : dates, distance, participation, annonces d'erreur
+├── data/         Événements de démonstration
+└── types.ts      Types partagés (utilisateur, événement)
+```
 
-Join our community of developers creating universal apps.
+## Limites du prototype
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Pas de serveur** : chaque téléphone a ses propres comptes et événements.
+- **Clé OpenWeather** : elle est incluse dans l'application installée. Dans une vraie application, c'est un serveur qui appellerait OpenWeather.
+- **Météo** : disponible seulement 5 jours avant l'événement (limite de l'offre gratuite).
+- **Distance** : à vol d'oiseau, pas par la route.
+- **Icône et splash screen** : configurés dans `app.json`, mais visibles seulement dans une application installée, pas dans Expo Go.
+
+## Suivi du projet
+
+- [`SUIVI.md`](SUIVI.md) : planning, décisions et leurs raisons, journal jour par jour
+- [`PROMPTS.md`](PROMPTS.md) : traçabilité de l'usage de l'intelligence artificielle
+
+Une branche par fonctionnalité, fusionnée dans `main` par Pull Request après test sur iPhone.
+
+## Autrice
+
+Marion Bozzo

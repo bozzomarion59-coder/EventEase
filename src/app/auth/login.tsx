@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  AccessibilityInfo,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -14,6 +13,7 @@ import { Link, router } from 'expo-router';
 import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { announceError } from '@/utils/accessibility';
 
 // Écran de connexion : vérifie l'email et le mot de passe dans le stockage local
 export default function LoginScreen() {
@@ -33,10 +33,7 @@ export default function LoginScreen() {
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Connexion impossible';
       setError(message);
-      // On attend que l'écran soit mis à jour, sinon l'annonce VoiceOver est annulée
-      setTimeout(() => {
-        AccessibilityInfo.announceForAccessibility(message);
-      }, 1000);
+      announceError(message);
     }
   }
 

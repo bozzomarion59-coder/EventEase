@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/storage';
 import { Event } from '@/types';
 import { formatEventDate } from '@/utils/date';
+import { isParticipant, sortByDate } from '@/utils/events';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -23,11 +24,7 @@ export default function ProfileScreen() {
       if (!user) return;
       getEvents()
         .then((events) =>
-          setParticipations(
-            events
-              .filter((e) => e.participants.includes(user.id))
-              .sort((a, b) => a.date.localeCompare(b.date)),
-          ),
+          setParticipations(sortByDate(events.filter((e) => isParticipant(e, user.id)))),
         )
         .catch(() => setParticipations([]));
     }, [user]),
