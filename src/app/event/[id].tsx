@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
-  AccessibilityInfo,
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,8 +15,12 @@ import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { deleteEvent, getEvent, getMemberInfo, toggleParticipation } from '@/services/storage';
+import { useDistance } from '@/hooks/useDistance';
+import { useEventWeather } from '@/hooks/useEventWeather';
 import { Event } from '@/types';
+import { announceError } from '@/utils/accessibility';
 import { formatEventDate } from '@/utils/date';
+import { isParticipant } from '@/utils/events';
 
 // Écran de détail : infos, participation, et Modifier / Supprimer pour le créateur
 export default function EventDetailScreen() {
@@ -29,13 +33,14 @@ export default function EventDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Météo et distance : calculées à part, sans bloquer l'affichage de l'écran
+  const { weather, message: weatherMessage } = useEventWeather(event);
+  const distanceText = useDistance(event?.latitude, event?.longitude);
+
   // Affiche l'erreur et la fait lire par VoiceOver / TalkBack
   function showError(message: string) {
     setError(message);
-    // Annonce différée d'une seconde, sinon elle est annulée sur iPhone
-    setTimeout(() => {
-      AccessibilityInfo.announceForAccessibility(message);
-    }, 1000);
+    announceError(message);
   }
 
   // Lit l'événement et le nom de son créateur
@@ -118,7 +123,7 @@ export default function EventDetailScreen() {
   }
 
   const isCreator = user !== null && event.createdBy === user.id;
-  const isParticipating = user !== null && event.participants.includes(user.id);
+  const isParticipating = isParticipant(event, user?.id);
   const count = event.participants.length;
   const countText =
     count === 0
@@ -130,9 +135,35 @@ export default function EventDetailScreen() {
       <Text style={styles.title} accessibilityRole="header">{event.title}</Text>
       <View style={styles.meta}>
         <Text style={styles.metaText}>{formatEventDate(event.date)}</Text>
+        {event.location && (
+          <Text style={styles.metaText}>
+            Lieu : {event.location}
+            {distanceText !== '' && `, ${distanceText}`}
+          </Text>
+        )}
         <Text style={styles.metaText}>{creatorText}</Text>
       </View>
       {event.description !== '' && <Text style={styles.description}>{event.description}</Text>}
+
+      {/* Météo prévue (OpenWeather) : l'icône vient du site d'OpenWeather */}
+      {(weather || weatherMessage !== '') && (
+        <View style={styles.card}>
+          <Text style={styles.cardLabel}>Météo prévue</Text>
+          {weather ? (
+            <View style={styles.weatherRow}>
+              <Image
+                source={{ uri: `https://openweathermap.org/img/wn/${weather.icon}@2x.png` }}
+                style={styles.weatherIcon}
+              />
+              <Text style={styles.cardValue}>
+                {weather.temperature} °C, {weather.description}
+              </Text>
+            </View>
+          ) : (
+            <Text style={styles.metaText}>{weatherMessage}</Text>
+          )}
+        </View>
+      )}
 
       <View style={styles.card}>
         <Text style={styles.cardLabel}>Participants</Text>
@@ -238,6 +269,15 @@ function makeStyles(colors: Palette) {
       borderRadius: 8,
       padding: 14,
       gap: 4,
+    },
+    weatherRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    weatherIcon: {
+      width: 48,
+      height: 48,
     },
     cardLabel: {
       fontSize: 13,

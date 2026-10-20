@@ -29,7 +29,13 @@
           "imageWidth": 200
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "EventEase utilise votre position pour afficher la distance jusqu’aux événements."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

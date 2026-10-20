@@ -3,11 +3,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getEvents } from '@/services/storage';
 import { Event } from '@/types';
-import { toDayKey } from '@/utils/date';
+import { formatDayKey, formatTime, toDayKey } from '@/utils/date';
+import { isParticipant, sortByDate } from '@/utils/events';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar, LocaleConfig } from 'react-native-calendars';
+import type { MarkedDates } from 'react-native-calendars/src/types';
 
 // Configuration de la locale française pour le calendrier
 LocaleConfig.locales['fr'] = {
@@ -19,6 +21,7 @@ LocaleConfig.locales['fr'] = {
 };
 LocaleConfig.defaultLocale = 'fr';
 
+// Onglet Calendrier : un point sous chaque jour qui a un événement, la liste du jour choisi en dessous
 export default function CalendarScreen() {
   const { colors, mode } = useTheme();
   const { user } = useAuth();
@@ -40,7 +43,7 @@ export default function CalendarScreen() {
       async function loadEvents() {
         try {
           const data = await getEvents();
-          setEvents(data);
+          setEvents(sortByDate(data)); // la liste du jour sera dans l'ordre des heures
         } catch (error) {
           console.error('Erreur lors du chargement des événements :', error);
         } finally {
@@ -51,36 +54,32 @@ export default function CalendarScreen() {
     }, []),
   );
 
-  // ÉTAPE 3 : Construction de l'objet de marquage des jours (markedDates)
+  // Points du calendrier, par jour : { "2026-10-24": { dots: [...] }, ... }
   const markedDates = useMemo(() => {
-    const marks: any = {};
+    const marks: MarkedDates = {};
 
-    // 1. Parcourir la liste des événements pour ajouter les points (dots)
+    // 1. Un point par jour qui a un événement
     events.forEach((event) => {
       const eventDate = toDayKey(new Date(event.date)); // jour local "YYYY-MM-DD"
 
       // Couleur du point : vert si je participe, bleu sinon
-      const isParticipating = user !== null && event.participants.includes(user.id);
+      const isParticipating = isParticipant(event, user?.id);
       const dotColor = isParticipating ? colors.success : colors.primary;
 
-      // Initialiser le nœud du jour s'il n'existe pas encore
-      if (!marks[eventDate]) {
-        marks[eventDate] = { dots: [] };
-      }
-
-      // Éviter de dupliquer les points identiques (par exemple si plusieurs événements du même type le même jour)
-      const dotExists = marks[eventDate].dots.some((d: any) => d.color === dotColor);
-      if (!dotExists) {
+      // Un seul point de chaque couleur par jour, même s'il y a plusieurs événements
+      const dots = marks[eventDate]?.dots ?? [];
+      if (!dots.some((dot) => dot.color === dotColor)) {
         // selectedDotColor sur chaque point : sinon la librairie garde color, invisible sur le cercle bleu
-        marks[eventDate].dots.push({
+        dots.push({
           color: dotColor,
           selectedDotColor: colors.onPrimary,
           key: isParticipating ? 'participating' : 'event',
         });
       }
+      marks[eventDate] = { dots };
     });
 
-    // 2. Fusionner ou écraser avec l'état sélectionné pour conserver le focus visuel
+    // 2. Le jour choisi : cercle bleu, en gardant ses points
     marks[selectedDate] = {
       ...marks[selectedDate],
       selected: true,
@@ -91,7 +90,7 @@ export default function CalendarScreen() {
     return marks;
   }, [events, selectedDate, colors, user]);
 
-  // ÉTAPE 4 : Filtrer la liste des événements pour le jour sélectionné
+  // Événements du jour choisi
   const eventsForSelectedDay = useMemo(() => {
     return events.filter((event) => toDayKey(new Date(event.date)) === selectedDate);
   }, [events, selectedDate]);
@@ -106,7 +105,7 @@ export default function CalendarScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} bounces={false}>
-      {/* Le Calendrier Interactif */}
+      {/* Calendrier du mois */}
       <Calendar
         key={mode} // Force le rafraîchissement complet au basculement de thème
         firstDay={1} // Semaine commence le lundi
@@ -143,18 +142,15 @@ export default function CalendarScreen() {
 
       {/* Titre de section pour la journée sélectionnée */}
       <Text style={styles.sectionTitle}>
-        Événements du {new Date(`${selectedDate}T00:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+        Événements du {formatDayKey(selectedDate)}
       </Text>
 
-      {/* ÉTAPE 4 : Affichage de la liste filtrée sous forme de cartes d'accessibilité */}
+      {/* Liste du jour : un appui ouvre le détail */}
       <View style={styles.listContainer}>
         {eventsForSelectedDay.length > 0 ? (
           eventsForSelectedDay.map((event) => {
-            const eventTime = new Date(event.date).toLocaleTimeString('fr-FR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            });
-            const isParticipating = user !== null && event.participants.includes(user.id);
+            const eventTime = formatTime(new Date(event.date));
+            const isParticipating = isParticipant(event, user?.id);
 
             return (
               <Pressable
@@ -189,8 +185,9 @@ export default function CalendarScreen() {
   );
 }
 
-const makeStyles = (colors: Palette) =>
-  StyleSheet.create({
+// Styles calculés à partir des couleurs du thème actif (clair ou sombre)
+function makeStyles(colors: Palette) {
+  return StyleSheet.create({
     scroll: {
       flex: 1,
       backgroundColor: colors.background,
@@ -292,3 +289,4 @@ const makeStyles = (colors: Palette) =>
       marginTop: 4,
     },
   });
+}

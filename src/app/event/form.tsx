@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  AccessibilityInfo,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -18,6 +17,9 @@ import { Palette } from '@/constants/colors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createEvent, getEvent, updateEvent } from '@/services/storage';
+import { geocodeCity } from '@/services/weather';
+import { announceError } from '@/utils/accessibility';
+import { formatTime } from '@/utils/date';
 
 // Formulaire d'événement : création (sans id) ou modification (avec ?id=), réservé au créateur
 export default function EventFormScreen() {
@@ -30,6 +32,7 @@ export default function EventFormScreen() {
   // États du formulaire
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
   const [date, setDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1); // demain
@@ -41,14 +44,12 @@ export default function EventFormScreen() {
   const [isLoading, setIsLoading] = useState(isEdit);
   const [canEdit, setCanEdit] = useState(!isEdit);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false); // pendant l'appel à OpenWeather
 
   // Affiche l'erreur et la fait lire par VoiceOver / TalkBack
   function showError(message: string) {
     setErrorMessage(message);
-    // Annonce différée d'une seconde, sinon elle est annulée sur iPhone
-    setTimeout(() => {
-      AccessibilityInfo.announceForAccessibility(`Erreur : ${message}`);
-    }, 1000);
+    announceError(message);
   }
 
   // En modification : préremplit les champs, si l'utilisateur est bien le créateur
@@ -67,6 +68,7 @@ export default function EventFormScreen() {
         }
         setTitle(event.title);
         setDescription(event.description);
+        setLocation(event.location ?? ''); // les anciens événements n'ont pas de lieu
         setDate(new Date(event.date));
         setCanEdit(true);
       } catch {
@@ -81,21 +83,31 @@ export default function EventFormScreen() {
   async function handleSubmit() {
     if (!user) return;
     setErrorMessage('');
+    setIsSaving(true);
 
     try {
+      // Le nom de la ville est converti en coordonnées (pour la météo et la distance)
+      const coords = await geocodeCity(location);
+      if (!coords) {
+        showError('Ville introuvable. Vérifiez l’orthographe.');
+        return;
+      }
+
       if (id) {
-        await updateEvent(id, title, description, date.toISOString(), user.id);
+        await updateEvent(id, title, description, date.toISOString(), location, coords.latitude, coords.longitude, user.id);
       } else {
-        await createEvent(title, description, date.toISOString(), user.id);
+        await createEvent(title, description, date.toISOString(), location, coords.latitude, coords.longitude, user.id);
       }
       router.back();
     } catch (e) {
       showError(e instanceof Error ? e.message : 'Une erreur est survenue.');
+    } finally {
+      setIsSaving(false);
     }
   }
 
-  const isSubmitDisabled = !title.trim() || !canEdit;
-  const timeText = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const isSubmitDisabled = !title.trim() || !location.trim() || !canEdit || isSaving;
+  const timeText = formatTime(date);
 
   if (isLoading) {
     return (
@@ -136,6 +148,18 @@ export default function EventFormScreen() {
           value={description}
           onChangeText={setDescription}
           multiline
+        />
+
+        {/* Champ Lieu : une ville, convertie en coordonnées à l'enregistrement */}
+        <Text style={styles.label}>Lieu *</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ex. : Douai"
+          placeholderTextColor={colors.textMuted}
+          accessibilityLabel="Ville de l’événement, obligatoire"
+          value={location}
+          onChangeText={setLocation}
+          autoCapitalize="words"
         />
 
         {/* Sélecteur de date et d'heure */}
