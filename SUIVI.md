@@ -115,3 +115,7 @@
 - Architecture revue (branche `refactor/architecture`) : services séparés, 4 composants d'interface partagés. Écrans plus courts (jusqu'à 130 lignes de moins pour le détail).
 - Nouveau style de l'app (branche `feat/style-associatif`) : 4 styles comparés en maquettes, puis 4 palettes. Testé sur iPhone en clair et en sombre (profil, calendrier, liste, formulaire, détail avec météo, distance et suppression).
 - Document technique (10 lignes) et diaporama de soutenance (15 diapos, PDF) ajoutés dans `docs/`, liens dans le README.
+
+### Mercredi 21/10 et jeudi 22/10
+- Révision de tout le code fichier par fichier, avec des questions posées comme un jury. Supports gardés hors du dépôt (sur mon ordinateur).
+- Soutenance décalée au vendredi 23/10. Diaporama corrigé : date de la couverture (23 octobre) et chiffres GitHub de la diapo 13, comptés après cette PR (33 commits, 14 Pull Requests, 14 branches).
